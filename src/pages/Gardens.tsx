@@ -1,111 +1,79 @@
-// src/pages/Gardens.tsx
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { gql, useLazyQuery, useMutation } from "@apollo/client";
+import { useLazyQuery, useMutation } from "@apollo/client";
+import { GetGarden, RequestGarden } from "../graphql";
+import type { Period } from "../utils";
+import { periodKeyFor } from "../utils";
 
-const GetGarden = gql`
-  query GetGarden($period: GardenPeriod!, $periodKey: String!) {
-    garden(period: $period, periodKey: $periodKey) {
-      id
-      status
-      imageUrl
-      summary
-      period
-      periodKey
-      updatedAt
+// --- small helpers ----------------------------------------------------
+
+const isTerminalStatus = (status?: string) =>
+  status === "READY" || status === "FAILED";
+
+// Encapsulate polling using refs for stability
+function useGardenPolling(
+  refetchFn: (vars: { period: Period; periodKey: string }) => void
+) {
+  const timerRef = useRef<number | null>(null);
+  const targetKeyRef = useRef<string>("");
+
+  const stop = useCallback(() => {
+    if (timerRef.current) {
+      window.clearInterval(timerRef.current);
+      timerRef.current = null;
     }
-  }
-`;
-
-const RequestGarden = gql`
-  mutation RequestGarden($period: GardenPeriod!, $periodKey: String!) {
-    requestGarden(period: $period, periodKey: $periodKey) {
-      id
-      status
-      period
-      periodKey
-      imageUrl
-    }
-  }
-`;
-
-type Period = "DAY" | "WEEK" | "MONTH" | "YEAR";
-
-function periodKeyFor(p: Period, d = new Date()) {
-  const iso = d.toISOString();
-  if (p === "DAY") return iso.slice(0, 10); // YYYY-MM-DD (UTC)
-  if (p === "MONTH") return iso.slice(0, 7); // YYYY-MM
-  if (p === "YEAR") return iso.slice(0, 4); // YYYY
-  // WEEK: approximate ISO week key “YYYY-W##”
-  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const dayNum = (date.getUTCDay() + 6) % 7; // Monday=0
-  date.setUTCDate(date.getUTCDate() - dayNum + 3);
-  const firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
-  const week =
-    1 +
-    Math.round(
-      ((date.getTime() - firstThursday.getTime()) / 86400000 -
-        3 +
-        ((firstThursday.getUTCDay() + 6) % 7)) /
-        7
-    );
-  return `${date.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
-}
-
-export default function Gardens() {
-  const [period, setPeriod] = useState<Period>("DAY");
-  const computedKey = useMemo(() => periodKeyFor(period), [period]);
-  const [currentKey, setCurrentKey] = useState<string>(() =>
-    periodKeyFor("DAY")
-  );
-  const pollTimer = useRef<number | null>(null);
-  const pollingKeyRef = useRef<string>("");
-  const [fetchGarden, { data, loading, error, refetch }] = useLazyQuery(
-    GetGarden,
-    {
-      fetchPolicy: "network-only",
-    }
-  );
-  const [requestGarden, { loading: requesting, error: requestError }] =
-    useMutation(RequestGarden);
-
-  const garden = data?.garden;
-
-  const stopPolling = useCallback(() => {
-    if (pollTimer.current) {
-      window.clearInterval(pollTimer.current);
-      pollTimer.current = null;
-    }
-    pollingKeyRef.current = "";
+    targetKeyRef.current = "";
   }, []);
 
-  const startPolling = useCallback(
+  const start = useCallback(
     (period: Period, periodKey: string) => {
-      stopPolling();
-      pollingKeyRef.current = `${period}:${periodKey}`;
-      pollTimer.current = window.setInterval(() => {
-        if (pollingKeyRef.current === `${period}:${periodKey}`) {
-          if (refetch) {
-            refetch({ period, periodKey });
-          } else {
-            fetchGarden({ variables: { period, periodKey } });
-          }
+      stop();
+      const target = `${period}:${periodKey}`;
+      targetKeyRef.current = target;
+
+      timerRef.current = window.setInterval(() => {
+        if (targetKeyRef.current === target) {
+          refetchFn({ period, periodKey });
         }
       }, 1500);
     },
-    [fetchGarden, refetch, stopPolling]
+    [refetchFn, stop]
   );
-  const status = garden?.status;
 
+  useEffect(() => stop, [stop]); // cleanup on unmount
+  return { start, stop };
+}
+
+// --- page -------------------------------------------------------------
+
+export default function Gardens() {
+  // UI state
+  const [period, setPeriod] = useState<Period>("DAY");
+  const computedKey = useMemo(() => periodKeyFor(period), [period]);
+  const [currentKey, setCurrentKey] = useState<string>(() => periodKeyFor("DAY"));
+
+  // Data hooks (shared GraphQL docs)
+  const [fetchGarden, { data, loading, error, refetch }] = useLazyQuery(GetGarden, {
+    fetchPolicy: "network-only",
+  });
+  const [requestGarden, { loading: requesting, error: requestError }] =
+    useMutation(RequestGarden);
+
+  // Derived
+  const garden = data?.garden;
+  const status = garden?.status;
+  const busy = loading || requesting;
+
+  // Polling (uses refetch when available; falls back to initial fetch)
+  const { start: startPolling, stop: stopPolling } = useGardenPolling((vars) =>
+    refetch ? refetch(vars) : fetchGarden({ variables: vars })
+  );
+
+  // Stop polling when job completes/fails
   useEffect(() => {
-    if (status === "READY" || status === "FAILED") {
-      stopPolling();
-    }
+    if (isTerminalStatus(status)) stopPolling();
   }, [status, stopPolling]);
 
-  // cleanup on unmount: use the stable callback
-  useEffect(() => stopPolling, [stopPolling]);
-
-  // when using them:
+  // Handlers
   const onFetch = () => {
     const key = computedKey;
     setCurrentKey(key);
@@ -121,16 +89,13 @@ export default function Gardens() {
     await fetchGarden({ variables: { period, periodKey: key } });
     startPolling(period, key);
   };
-  const busy = loading || requesting;
 
   return (
     <div className="mx-auto max-w-4xl p-6 space-y-6">
       <header className="flex items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Gardens</h1>
-          <p className="text-sm text-gray-500">
-            View or generate your gardens by period.
-          </p>
+          <p className="text-sm text-gray-500">View or generate your gardens by period.</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -145,13 +110,11 @@ export default function Gardens() {
             <option value="MONTH">Month</option>
             <option value="YEAR">Year</option>
           </select>
-          <button
-            className="rounded border px-3 py-2 text-sm"
-            onClick={onFetch}
-            disabled={busy}
-          >
+
+          <button className="rounded border px-3 py-2 text-sm" onClick={onFetch} disabled={busy}>
             {loading ? "Loading…" : "Fetch"}
           </button>
+
           <button
             className="rounded bg-black px-3 py-2 text-sm text-white disabled:opacity-60"
             onClick={onGenerate}
@@ -176,9 +139,7 @@ export default function Gardens() {
         )}
 
         {!garden && !loading && (
-          <p className="mt-2 text-gray-500">
-            No garden yet for this period/key.
-          </p>
+          <p className="mt-2 text-gray-500">No garden yet for this period/key.</p>
         )}
 
         {garden && (
@@ -211,18 +172,12 @@ export default function Gardens() {
                   <p className="mt-2 text-sm text-gray-600">{garden.summary}</p>
                 )}
                 <div className="mt-3 flex gap-2">
-                  <a
-                    href={garden.imageUrl}
-                    download
-                    className="rounded border px-3 py-1 text-sm"
-                  >
+                  <a href={garden.imageUrl} download className="rounded border px-3 py-1 text-sm">
                     Download
                   </a>
                   <button
                     className="rounded border px-3 py-1 text-sm"
-                    onClick={() =>
-                      navigator.clipboard.writeText(garden.imageUrl)
-                    }
+                    onClick={() => navigator.clipboard.writeText(garden.imageUrl)}
                   >
                     Copy Link
                   </button>
@@ -231,9 +186,7 @@ export default function Gardens() {
             )}
 
             {garden.status === "FAILED" && (
-              <p className="mt-2 text-sm text-red-600">
-                Generation failed. Please try again.
-              </p>
+              <p className="mt-2 text-sm text-red-600">Generation failed. Please try again.</p>
             )}
           </div>
         )}
