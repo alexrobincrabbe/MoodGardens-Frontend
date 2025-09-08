@@ -51,11 +51,13 @@ const shareNative = async (url: string, text: string) => {
   // Fallback to X intent
   openPopup(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
 };
+
 const shareFacebook = (url: string, text: string) => {
   openPopup(
     `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`
   );
 };
+
 const shareX = (url: string, text: string) => {
   openPopup(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
 };
