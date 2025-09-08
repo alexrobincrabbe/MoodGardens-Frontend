@@ -1,5 +1,10 @@
 {
   "rewrites": [
-    { "source": "/share/:shareId", "destination": "/api/share/:shareId" }
+    { "source": "/share/:shareId", "destination": "/api/share/:shareId" },
+    {
+      "source": "/(?!api/)(.*)",
+      "destination": "/index.html",
+      "missing": [{ "type": "filesystem" }]
+    }
   ]
 }
