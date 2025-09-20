@@ -5,10 +5,6 @@
       "source": "/((?!api/|share/|@vite/|@react-refresh|__vite_ping|.*\\..*).*)",
       "destination": "/index.html"
     },
-    {
-  "rewrites": [
     { "source": "/graphql", "destination": "https://api.your-domain.com/graphql" }
-  ]
-}
   ]
 }
