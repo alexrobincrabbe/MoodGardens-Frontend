@@ -2,10 +2,10 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@apollo/client";
-
 import { UpsertEntry, RequestGarden, GetGarden, MyEntries, EntryByDay } from "../graphql";
 import { entrySchema, type EntryForm } from "../validation";
 import { isoDayKey } from "../utils";
+import { useAuth } from "../auth/context";
 
 /* ---------------------- Shared helpers (download/share) ---------------------- */
 
@@ -45,10 +45,9 @@ const shareNative = async (url: string, text: string) => {
       await anyNav.share({ title: "Mood Gardens", text, url });
       return;
     } catch {
-      /* fall through to popups */
+      /* fall through */
     }
   }
-  // Fallback to X intent
   openPopup(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
 };
 
@@ -68,17 +67,18 @@ export default function Today() {
   const [gardenId, setGardenId] = useState<string | null>(null);
   const [statusText, setStatusText] = useState<string>("");
 
+  const { isAuthed, status } = useAuth();
   const dayKey = isoDayKey();
 
-  // Check if today's entry exists
+  // Only check today's entry when authenticated
   const {
     data: todayData,
     loading: todayLoading,
-    error: todayError,
     refetch: refetchToday,
   } = useQuery(EntryByDay, {
     variables: { dayKey },
     fetchPolicy: "cache-and-network",
+    skip: !isAuthed,
   });
 
   const hasToday = Boolean(todayData?.entryByDay);
@@ -96,14 +96,9 @@ export default function Today() {
   const onSubmit = async (vals: EntryForm) => {
     setStatusText("");
     try {
-      await upsertEntry({
-        variables: { text: vals.text, songUrl: vals.songUrl, dayKey },
-      });
+      await upsertEntry({ variables: { text: vals.text, songUrl: vals.songUrl, dayKey } });
 
-      const res = await requestGarden({
-        variables: { period: "DAY", periodKey: dayKey },
-      });
-
+      const res = await requestGarden({ variables: { period: "DAY", periodKey: dayKey } });
       const newId = res.data?.requestGarden?.id ?? null;
       if (!newId) {
         setStatusText("Could not start garden job (no id returned).");
@@ -131,22 +126,26 @@ export default function Today() {
     refetchFeed,
     initialError,
     initialLoading,
-  } = useEntriesFeed({ excludeDayKey: dayKey });
+  } = useEntriesFeed({ excludeDayKey: dayKey, isAuthed });
 
   return (
     <div className="mx-auto max-w-2xl p-6 space-y-6">
       <header>
         <h1 className="text-3xl font-bold">Today</h1>
-        <p className="text-sm text-gray-500">Log a sentence and an optional song. We’ll grow a “day garden.”</p>
+        <p className="text-sm text-gray-500">Write about your day. We’ll grow a “day garden.”</p>
       </header>
 
-      {todayError?.message?.includes("Not authenticated") && (
+      {status === "loading" && (
+        <div className="rounded-md border bg-gray-50 p-3 text-sm text-gray-600">Checking session…</div>
+      )}
+
+      {!isAuthed && status !== "loading" && (
         <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
           Please sign in to log entries and see your gardens.
         </div>
       )}
 
-      {!todayLoading && !hasToday && !todayError && (
+      {isAuthed && !todayLoading && !hasToday && (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <label className="block text-sm font-medium">What’s on your mind?</label>
@@ -159,18 +158,11 @@ export default function Today() {
             {errors.text && <p className="mt-1 text-sm text-red-600">{errors.text.message}</p>}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium">Song (optional URL: Spotify/YouTube/etc.)</label>
-            <input
-              type="url"
-              className="mt-1 w-full rounded-lg border p-2"
-              placeholder="https://open.spotify.com/track/..."
-              {...register("songUrl")}
-            />
-            {errors.songUrl && <p className="mt-1 text-sm text-red-600">{String(errors.songUrl.message)}</p>}
-          </div>
-
-          <button type="submit" disabled={isSubmitting} className="rounded-lg bg-black px-4 py-2 text-white disabled:opacity-60">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="rounded-lg bg-black px-4 py-2 text-white disabled:opacity-60"
+          >
             {isSubmitting ? "Saving…" : "Save & Generate Garden"}
           </button>
 
@@ -178,28 +170,31 @@ export default function Today() {
         </form>
       )}
 
-      {hasToday && (
+      {isAuthed && hasToday && (
         <div className="rounded-lg border bg-gray-50 p-3 text-sm text-gray-700">
           You’ve already logged an entry for <span className="font-medium">{dayKey}</span>.
         </div>
       )}
 
-      {!todayError && (
-        <TodayGardenPreview periodKey={dayKey} statusText={statusText} key={gardenId ?? (hasToday ? "has-today" : "no-today")} />
+      {/* Only render preview while authed (component also reads auth and skips its query) */}
+      {isAuthed && (
+        <TodayGardenPreview periodKey={dayKey} statusText={statusText} key={gardenId ?? (hasToday ? "has" : "no")} />
       )}
 
       {/* Entries feed with infinite scroll */}
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">Your entries</h2>
 
-        {initialError?.message?.includes("Not authenticated") && (
+        {!isAuthed && status !== "loading" && (
           <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
             Sign in to see your saved entries and gardens.
           </div>
         )}
 
-        {initialLoading && <p className="text-sm text-gray-500">Loading entries…</p>}
-        {!initialLoading && items.length === 0 && !initialError && <p className="text-sm text-gray-500">No entries yet.</p>}
+        {isAuthed && initialLoading && <p className="text-sm text-gray-500">Loading entries…</p>}
+        {isAuthed && !initialLoading && items.length === 0 && !initialError && (
+          <p className="text-sm text-gray-500">No entries yet.</p>
+        )}
 
         {items.map((e) => (
           <article key={e.id} className="rounded-lg border p-3">
@@ -223,7 +218,10 @@ export default function Today() {
                       <span>{Math.round(e.garden.progress)}%</span>
                     </div>
                     <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
-                      <div className="h-full rounded-full bg-black transition-[width] duration-300 ease-out" style={{ width: `${Math.round(e.garden.progress)}%` }} />
+                      <div
+                        className="h-full rounded-full bg-black transition-[width] duration-300 ease-out"
+                        style={{ width: `${Math.round(e.garden.progress)}%` }}
+                      />
                     </div>
                   </div>
                 )}
@@ -247,10 +245,7 @@ export default function Today() {
                       <button
                         className="rounded border px-3 py-1 text-sm"
                         onClick={() =>
-                          shareNative(
-                            e.garden.shareUrl ?? e.garden.imageUrl!,
-                            `My Mood Garden for ${e.garden.periodKey} 🌱 #MoodGardens`
-                          )
+                          shareNative(e.garden.shareUrl ?? e.garden.imageUrl!, `My Mood Garden for ${e.garden.periodKey} 🌱 #MoodGardens`)
                         }
                       >
                         Share
@@ -275,24 +270,25 @@ export default function Today() {
           </article>
         ))}
 
-        <LoadMoreTrigger onVisible={loadMore} loading={loadingMore} hasMore={hasMore} />
+        {/* Only mount the trigger when we actually have more pages */}
+        {hasMore && <LoadMoreTrigger onVisible={loadMore} loading={loadingMore} hasMore={hasMore} />}
       </section>
     </div>
   );
 }
 
-/** Lightweight preview component responsible only for reading/polling */
-function TodayGardenPreview({
-  periodKey,
-  statusText,
-}: {
-  periodKey: string;
-  statusText?: string;
-}) {
-  const { data, loading, error, startPolling, stopPolling } = useQuery(GetGarden, {
+/* ---------------------- TodayGardenPreview ---------------------- */
+
+type PreviewProps = { periodKey: string; statusText?: string };
+
+function TodayGardenPreview({ periodKey, statusText }: PreviewProps) {
+  const { isAuthed } = useAuth();
+
+  const { data, error, startPolling, stopPolling } = useQuery(GetGarden, {
     variables: { period: "DAY", periodKey },
     fetchPolicy: "network-only",
     notifyOnNetworkStatusChange: true,
+    skip: !isAuthed,
   });
 
   const [progress, setProgress] = useState<number>(0);
@@ -300,20 +296,26 @@ function TodayGardenPreview({
   const startTsRef = useRef<number | null>(null);
 
   useEffect(() => {
-    startPolling(1500);
-    return () => stopPolling();
-  }, [startPolling, stopPolling]);
+    if (!isAuthed) {
+      stopPolling?.();
+      return;
+    }
+    startPolling?.(1500);
+    return () => stopPolling?.();
+  }, [isAuthed, startPolling, stopPolling]);
 
   const garden = data?.garden;
 
   useEffect(() => {
     const s = data?.garden?.status;
-    if (s === "READY" || s === "FAILED") stopPolling();
+    if (s === "READY" || s === "FAILED") stopPolling?.();
   }, [data?.garden?.status, stopPolling]);
 
   const serverProgress = typeof (garden as any)?.progress === "number" ? (garden as any).progress : null;
 
   useEffect(() => {
+    if (!isAuthed) return;
+
     const status = garden?.status;
     const isPending = status === "PENDING";
 
@@ -365,7 +367,7 @@ function TodayGardenPreview({
         rafRef.current = null;
       };
     }
-  }, [garden?.status, serverProgress]);
+  }, [isAuthed, garden?.status, serverProgress]);
 
   function gardenStageLabel(p: number): string {
     if (p < 20) return "Seeds planted…";
@@ -377,6 +379,15 @@ function TodayGardenPreview({
 
   const displayProgress = Math.round(serverProgress ?? progress);
 
+  if (!isAuthed) {
+    return (
+      <section className="rounded-xl border p-4">
+        <h2 className="mb-2 text-lg font-semibold">Today’s Garden</h2>
+        <p className="text-sm text-amber-700">Please sign in to generate and view your garden.</p>
+      </section>
+    );
+  }
+
   return (
     <section className="rounded-xl border p-4">
       <h2 className="mb-2 text-lg font-semibold">Today’s Garden</h2>
@@ -387,8 +398,7 @@ function TodayGardenPreview({
         </div>
       )}
 
-      {loading && <p>Checking status…</p>}
-      {!loading && !garden && <p>No garden yet.</p>}
+      {!garden && <p>No garden yet.</p>}
 
       {garden && (
         <div className="space-y-2">
@@ -463,27 +473,41 @@ function TodayGardenPreview({
   );
 }
 
-/** --- Entries feed hooks & components ----------------------------------- */
+/* ---------------------- Entries feed hook & components ---------------------- */
 
-function useEntriesFeed(opts?: { excludeDayKey?: string }) {
+function useEntriesFeed(opts?: { excludeDayKey?: string; isAuthed?: boolean }) {
   const LIMIT = 10;
   const excludeDayKey = opts?.excludeDayKey;
+  const isAuthed = opts?.isAuthed ?? true;
+  const skip = !isAuthed;
 
   const [items, setItems] = useState<any[]>([]);
-  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [hasMore, setHasMore] = useState<boolean>(!skip);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
-  const [totalFetched, setTotalFetched] = useState<number>(0); // raw count from server, BEFORE filtering
+  const [totalFetched, setTotalFetched] = useState<number>(0);
 
   const {
     data,
-    loading: initialLoading,
-    error: initialError,
+    loading: initialLoadingRaw,
+    error: initialErrorRaw,
     fetchMore,
     refetch,
   } = useQuery(MyEntries, {
     variables: { limit: LIMIT, offset: 0 },
     notifyOnNetworkStatusChange: true,
+    skip, 
+    fetchPolicy: "network-only", 
   });
+
+  // Force stable empty state when skipped
+  useEffect(() => {
+    if (skip) {
+      setItems([]);
+      setHasMore(false);
+      setLoadingMore(false);
+      setTotalFetched(0);
+    }
+  }, [skip]);
 
   const dedupeById = useCallback((arr: any[]) => {
     const seen = new Set<string>();
@@ -501,23 +525,23 @@ function useEntriesFeed(opts?: { excludeDayKey?: string }) {
     excludeDayKey,
   ]);
 
-  // Seed from first page ONCE
+  // Seed from first page ONCE (not when skipped)
   useEffect(() => {
-    if (!initialLoading && data?.myEntries && totalFetched === 0) {
+    if (skip) return;
+    if (!initialLoadingRaw && data?.myEntries && totalFetched === 0) {
       const firstPage: any[] = data.myEntries;
       setTotalFetched(firstPage.length);
       setItems(dedupeById(filterOutToday(firstPage)));
-      setHasMore(firstPage.length === LIMIT); // base on raw size
+      setHasMore(firstPage.length === LIMIT);
     }
-  }, [initialLoading, data?.myEntries, totalFetched, dedupeById, filterOutToday]);
+  }, [skip, initialLoadingRaw, data?.myEntries, totalFetched, dedupeById, filterOutToday]);
 
   const loadMore = useCallback(async () => {
-    if (initialLoading || loadingMore || !hasMore) return;
+    if (skip) return;
+    if (initialLoadingRaw || loadingMore || !hasMore) return;
     setLoadingMore(true);
     try {
-      const res = await fetchMore({
-        variables: { limit: LIMIT, offset: totalFetched }, // use RAW fetched count
-      });
+      const res = await fetchMore({ variables: { limit: LIMIT, offset: totalFetched } });
       const nextPage: any[] = res.data?.myEntries ?? [];
       setTotalFetched((n) => n + nextPage.length);
       setItems((prev) => dedupeById([...prev, ...filterOutToday(nextPage)]));
@@ -525,20 +549,24 @@ function useEntriesFeed(opts?: { excludeDayKey?: string }) {
     } finally {
       setLoadingMore(false);
     }
-  }, [fetchMore, hasMore, initialLoading, loadingMore, totalFetched, dedupeById, filterOutToday]);
+  }, [skip, fetchMore, hasMore, initialLoadingRaw, loadingMore, totalFetched, dedupeById, filterOutToday]);
 
   const refetchFeed = useCallback(async () => {
+    if (skip) return;
     const res = await refetch({ limit: LIMIT, offset: 0 });
     const firstPage: any[] = res.data?.myEntries ?? [];
     setTotalFetched(firstPage.length);
     setItems(dedupeById(filterOutToday(firstPage)));
     setHasMore(firstPage.length === LIMIT);
-  }, [refetch, dedupeById, filterOutToday]);
+  }, [skip, refetch, dedupeById, filterOutToday]);
+
+  const initialLoading = skip ? false : initialLoadingRaw;
+  const initialError = skip ? undefined : initialErrorRaw;
 
   return {
     items,
-    hasMore,
-    loadingMore,
+    hasMore: skip ? false : hasMore,
+    loadingMore: skip ? false : loadingMore,
     loadMore,
     refetchFeed,
     initialError,

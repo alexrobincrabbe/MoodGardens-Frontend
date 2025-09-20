@@ -6,18 +6,15 @@ export const Me = gql`
       id
       email
       createdAt
+      displayName
     }
   }
 `;
 
 export const Register = gql`
-  mutation Register($email: String!, $password: String!) {
-    register(email: $email, password: $password) {
-      user {
-        id
-        email
-        createdAt
-      }
+  mutation Register($email: String!, $password: String!, $displayName: String!) {
+    register(email: $email, password: $password, displayName: $displayName) {
+       user { id }
     }
   }
 `;
@@ -25,11 +22,7 @@ export const Register = gql`
 export const Login = gql`
   mutation Login($email: String!, $password: String!) {
     login(email: $email, password: $password) {
-      user {
-        id
-        email
-        createdAt
-      }
+       user { id }
     }
   }
 `;

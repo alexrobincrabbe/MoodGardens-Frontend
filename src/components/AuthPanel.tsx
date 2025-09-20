@@ -1,68 +1,95 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 import { Me, Register, Login, Logout } from "../graphql/auth";
 
 export default function AuthPanel() {
   const client = useApolloClient();
-  const { data, loading: meLoading } = useQuery(Me, { fetchPolicy: "cache-first" });
+  const { data, loading: meLoading } = useQuery(Me, {
+     fetchPolicy: "cache-and-network",
+  nextFetchPolicy: "cache-first",
+  });
   const me = data?.me ?? null;
+ useEffect(() => {
+  console.log("Me changed:", me, data);
+}, [me, data]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [mode, setMode] = useState<"login" | "register">("login");
   const [msg, setMsg] = useState<string>("");
 
-  const [registerMut, { loading: regLoading }] = useMutation(Register);
+  const [registerMut, { loading: registerLoading }] = useMutation(Register);
   const [loginMut, { loading: loginLoading }] = useMutation(Login);
   const [logoutMut, { loading: logoutLoading }] = useMutation(Logout);
 
-  const busy = meLoading || regLoading || loginLoading || logoutLoading;
+  const busy = meLoading || registerLoading || loginLoading || logoutLoading;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMsg("");
+
     try {
-      const variables = { email: email.trim(), password };
-      if (!variables.email || !variables.password) {
+      const loginDetails = { email: email.trim(), password };
+      if (!loginDetails.email || !loginDetails.password) {
         setMsg("Please enter email and password.");
         return;
       }
 
-      const result =
-        mode === "register"
-          ? await registerMut({ variables })
-          : await loginMut({ variables });
+      if (mode === "register") {
+        const registerDetails = {
+          ...loginDetails,
+          displayName: displayName.trim(),
+        };
+        if (!registerDetails.displayName) {
+          setMsg("Please enter a display name.");
+          return;
+        }
+        const result = await registerMut({
+          variables: registerDetails,
+          refetchQueries: [{ query: Me }],
+        });
+        await client.resetStore();              // 👈 important
 
-      const user = result.data?.[mode]?.user;
-      if (user) {
-        // Ensure Apollo cache has the latest "me"
-        client.writeQuery({ query: Me, data: { me: user } });
-        setMsg(mode === "register" ? "Registered & signed in." : "Signed in.");
+        const user = result.data?.register?.user;
+        if (!user) throw new Error("Unexpected response.");
+        setMsg("Registered & signed in.");
         setPassword("");
+        setDisplayName("");
       } else {
-        setMsg("Unexpected response. Please try again.");
+        const result = await loginMut({
+          variables: loginDetails,
+          refetchQueries: [{ query: Me }],
+        });
+        await client.resetStore();              // 👈 important
+
+        const user = result.data?.login?.user;
+        if (!user) throw new Error("Unexpected response.");
+        setMsg("Signed in.");
+        setPassword("");
       }
     } catch (err: any) {
-  const network = (err as any)?.networkError as any;
-  const detailed =
-    err?.graphQLErrors?.[0]?.message ||
-    network?.result?.errors?.[0]?.message ||
-    network?.message ||
-    err?.message;
+      const network = (err as any)?.networkError as any;
+      const detailed =
+        err?.graphQLErrors?.[0]?.message ||
+        network?.result?.errors?.[0]?.message ||
+        network?.message ||
+        err?.message;
 
-  setMsg(detailed || "Authentication failed.");
-  console.error(
-    "[Auth] register/login error:",
-    JSON.stringify(network?.result ?? err, null, 2)
-  );
-}
+      setMsg(detailed || "Authentication failed.");
+      console.error(
+        "[Auth] register/login error:",
+        JSON.stringify(network?.result ?? err, null, 2)
+      );
+    }
   }
 
   async function handleLogout() {
     setMsg("");
     try {
       await logoutMut();
-      // Clear user from cache
+      await client.resetStore();              // 👈 important
+
       client.writeQuery({ query: Me, data: { me: null } });
       await client.clearStore();
       setMsg("Signed out.");
@@ -130,13 +157,27 @@ export default function AuthPanel() {
             disabled={busy}
           />
         </div>
+        {mode === "register" && (
+          <div>
+            <label className="block text-sm font-medium">Display Name</label>
+            <input
+              className="mt-1 w-full rounded-lg border p-2"
+              placeholder="choose a name"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              disabled={busy}
+            />
+          </div>
+        )}
         <div>
           <label className="block text-sm font-medium">Password</label>
           <input
             type="password"
             className="mt-1 w-full rounded-lg border p-2"
             placeholder="••••••••"
-            autoComplete={mode === "register" ? "new-password" : "current-password"}
+            autoComplete={
+              mode === "register" ? "new-password" : "current-password"
+            }
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={busy}
@@ -148,7 +189,13 @@ export default function AuthPanel() {
           disabled={busy}
           className="rounded-lg bg-black px-4 py-2 text-white disabled:opacity-60"
         >
-          {busy ? (mode === "register" ? "Registering…" : "Signing in…") : mode === "register" ? "Create account" : "Sign in"}
+          {busy
+            ? mode === "register"
+              ? "Registering…"
+              : "Signing in…"
+            : mode === "register"
+            ? "Create account"
+            : "Sign in"}
         </button>
 
         {msg && <p className="text-sm text-gray-600">{msg}</p>}
