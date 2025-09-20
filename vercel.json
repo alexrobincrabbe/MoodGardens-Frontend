@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/graphql", "destination": "https://api.YOUR-REAL-DOMAIN.com/graphql" },
+    { "source": "/graphql", "destination": "https://mood-gardens-backend-93b0934580ff.herokuapp.com/graphql" },
     { "source": "/share/:shareId", "destination": "/api/share/:shareId" },
     { "source": "/((?!api/|share/|@vite/|@react-refresh|__vite_ping|.*\\..*).*)", "destination": "/index.html" }
   ]
