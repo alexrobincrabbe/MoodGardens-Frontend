@@ -1,10 +1,7 @@
 {
   "rewrites": [
+    { "source": "/graphql", "destination": "https://api.YOUR-REAL-DOMAIN.com/graphql" },
     { "source": "/share/:shareId", "destination": "/api/share/:shareId" },
-    {
-      "source": "/((?!api/|share/|@vite/|@react-refresh|__vite_ping|.*\\..*).*)",
-      "destination": "/index.html"
-    },
-    { "source": "/graphql", "destination": "https://api.your-domain.com/graphql" }
+    { "source": "/((?!api/|share/|@vite/|@react-refresh|__vite_ping|.*\\..*).*)", "destination": "/index.html" }
   ]
 }
