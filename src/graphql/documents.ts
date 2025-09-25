@@ -77,3 +77,19 @@ export const EntryByDay = gql`
     }
   }
 `;
+
+export const MyGardensByMonth = gql`
+  query MyGardensByMonth($monthKey: String!) {
+    myGardensByMonth(monthKey: $monthKey) {
+      id
+      period
+      periodKey
+      status
+      imageUrl
+      summary
+      progress
+      shareUrl
+      updatedAt
+    }
+  }
+`;

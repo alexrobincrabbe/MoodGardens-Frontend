@@ -4,7 +4,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import App from "./App";
 import Home from "./pages/Home";
 import Today from "./pages/Today";
-import Gardens from "./pages/Gardens";
+import Calendar from "./pages/Calendar";
 import "./index.css";
 import AuthProvider from "./auth/AuthProvider";
 import ApolloProviderWithAuth from "./apollo/ApolloProviderWithAuth";
@@ -17,7 +17,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "today", element: <Today /> },    
-      { path: "gardens", element: <Gardens /> },
+      { path: "gardens", element: <Calendar /> },
     ],
   },
 ]);
