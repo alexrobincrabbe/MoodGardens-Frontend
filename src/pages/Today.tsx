@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@apollo/client";
 import { UpsertEntry, RequestGarden, GetGarden, MyEntries, EntryByDay } from "../graphql";
+import { Me } from "../graphql/auth";
 import { entrySchema, type EntryForm } from "../validation";
 import { isoDayKey } from "../utils";
 import { useAuth } from "../auth/context";
@@ -64,6 +65,11 @@ const shareX = (url: string, text: string) => {
 /* --------------------------------------------------------------------------- */
 
 export default function Today() {
+     const { data:userData } = useQuery(Me, {
+    fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
+  });
+  const me = userData?.me ?? null;
   const [gardenId, setGardenId] = useState<string | null>(null);
   const [statusText, setStatusText] = useState<string>("");
 
@@ -148,7 +154,7 @@ export default function Today() {
       {isAuthed && !todayLoading && !hasToday && (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium">What’s on your mind?</label>
+            <label className="block text-sm font-medium">What’s on your mind {me.displayName}?</label>
             <textarea
               className="mt-1 w-full rounded-lg border p-3"
               rows={4}

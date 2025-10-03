@@ -32,3 +32,14 @@ export const Logout = gql`
     logout
   }
 `;
+
+export const UpdateDisplayName = gql`
+  mutation UpdateDisplayName($displayName: String!) {
+    updateDisplayName(displayName: $displayName) {
+      id
+      email
+      createdAt
+      displayName
+    }
+  }
+`;

@@ -4,14 +4,14 @@ import { Me, Register, Login, Logout } from "../graphql/auth";
 
 export default function AuthPanel() {
   const client = useApolloClient();
-  const { data, loading: meLoading } = useQuery(Me, {
-     fetchPolicy: "cache-and-network",
-  nextFetchPolicy: "cache-first",
+  const { data:userData, loading: meLoading } = useQuery(Me, {
+    fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
   });
-  const me = data?.me ?? null;
- useEffect(() => {
-  console.log("Me changed:", me, data);
-}, [me, data]);
+  const me = userData?.me ?? null;
+  useEffect(() => {
+    console.log("Me changed:", me, userData);
+  }, [me, userData]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -45,25 +45,25 @@ export default function AuthPanel() {
           setMsg("Please enter a display name.");
           return;
         }
-        const result = await registerMut({
+        const newUser = await registerMut({
           variables: registerDetails,
           refetchQueries: [{ query: Me }],
         });
-        await client.resetStore();              // 👈 important
+        await client.resetStore();
 
-        const user = result.data?.register?.user;
+        const user = newUser.data?.register?.user;
         if (!user) throw new Error("Unexpected response.");
         setMsg("Registered & signed in.");
         setPassword("");
         setDisplayName("");
       } else {
-        const result = await loginMut({
+        const loginUser = await loginMut({
           variables: loginDetails,
           refetchQueries: [{ query: Me }],
         });
-        await client.resetStore();              // 👈 important
+        await client.resetStore(); 
 
-        const user = result.data?.login?.user;
+        const user = loginUser.data?.login?.user;
         if (!user) throw new Error("Unexpected response.");
         setMsg("Signed in.");
         setPassword("");
@@ -88,8 +88,7 @@ export default function AuthPanel() {
     setMsg("");
     try {
       await logoutMut();
-      await client.resetStore();              // 👈 important
-
+      await client.resetStore();
       client.writeQuery({ query: Me, data: { me: null } });
       await client.clearStore();
       setMsg("Signed out.");
