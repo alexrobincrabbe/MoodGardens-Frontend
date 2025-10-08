@@ -23,6 +23,7 @@ export const RequestGarden = gql`
       period
       periodKey
       imageUrl
+      publicId
       shareUrl    # <-- NEW
       progress
       updatedAt
@@ -36,7 +37,8 @@ export const GetGarden = gql`
       id
       status
       imageUrl
-      shareUrl    # <-- NEW
+      publicId
+      shareUrl   # <-- NEW
       summary
       period
       periodKey
@@ -58,6 +60,7 @@ export const MyEntries = gql`
         id
         status
         imageUrl
+        publicId
         shareUrl    # <-- NEW
         progress
         periodKey
@@ -73,6 +76,7 @@ export const EntryByDay = gql`
     entryByDay(dayKey: $dayKey) {
       id
       dayKey
+      text
       createdAt
     }
   }
@@ -86,6 +90,7 @@ export const MyGardensByMonth = gql`
       periodKey
       status
       imageUrl
+      publicId
       summary
       progress
       shareUrl

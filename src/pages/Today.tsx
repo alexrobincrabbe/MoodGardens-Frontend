@@ -1,3 +1,4 @@
+// apps/web/src/pages/Today.tsx
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,69 +8,20 @@ import { Me } from "../graphql/auth";
 import { entrySchema, type EntryForm } from "../validation";
 import { isoDayKey } from "../utils";
 import { useAuth } from "../auth/context";
-
-/* ---------------------- Shared helpers (download/share) ---------------------- */
-
-const downloadImage = async (url: string, filename: string) => {
-  try {
-    const res = await fetch(url, { mode: "cors" });
-    const blob = await res.blob();
-    const blobUrl = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = blobUrl;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(blobUrl);
-  } catch (e) {
-    console.error("Download failed:", e);
-  }
-};
-
-const openPopup = (url: string) => {
-  const w = 700;
-  const h = 600;
-  const dualScreenLeft = (window.screenLeft ?? window.screenX ?? 0) as number;
-  const dualScreenTop = (window.screenTop ?? window.screenY ?? 0) as number;
-  const width = (window.innerWidth ?? document.documentElement.clientWidth ?? screen.width) as number;
-  const height = (window.innerHeight ?? document.documentElement.clientHeight ?? screen.height) as number;
-  const left = dualScreenLeft + Math.max(0, (width - w) / 2);
-  const top = dualScreenTop + Math.max(0, (height - h) / 2);
-  window.open(url, "_blank", `noopener,noreferrer,width=${w},height=${h},left=${left},top=${top}`);
-};
-
-const shareNative = async (url: string, text: string) => {
-  const anyNav = navigator as any;
-  if (anyNav.share) {
-    try {
-      await anyNav.share({ title: "Mood Gardens", text, url });
-      return;
-    } catch {
-      /* fall through */
-    }
-  }
-  openPopup(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
-};
-
-const shareFacebook = (url: string, text: string) => {
-  openPopup(
-    `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`
-  );
-};
-
-const shareX = (url: string, text: string) => {
-  openPopup(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
-};
+import { AdvancedImage, lazyload, responsive, placeholder } from "@cloudinary/react";
+import { gardenThumb, gardenDownloadUrl, gardenShareUrl } from "../utils";
+import { shareNative } from "../utils/share";
+import { downloadImage } from "../utils/download";
 
 /* --------------------------------------------------------------------------- */
 
 export default function Today() {
-     const { data:userData } = useQuery(Me, {
+  const { data: userData } = useQuery(Me, {
     fetchPolicy: "cache-and-network",
     nextFetchPolicy: "cache-first",
   });
   const me = userData?.me ?? null;
+
   const [gardenId, setGardenId] = useState<string | null>(null);
   const [statusText, setStatusText] = useState<string>("");
 
@@ -124,15 +76,8 @@ export default function Today() {
   };
 
   // FEED state/hooks live here; UI component is below
-  const {
-    items,
-    hasMore,
-    loadingMore,
-    loadMore,
-    refetchFeed,
-    initialError,
-    initialLoading,
-  } = useEntriesFeed({ excludeDayKey: dayKey, isAuthed });
+  const { items, hasMore, loadingMore, loadMore, refetchFeed, initialError, initialLoading } =
+    useEntriesFeed({ excludeDayKey: dayKey, isAuthed });
 
   return (
     <div className="mx-auto max-w-2xl p-6 space-y-6">
@@ -154,7 +99,7 @@ export default function Today() {
       {isAuthed && !todayLoading && !hasToday && (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium">What’s on your mind {me.displayName}?</label>
+            <label className="block text-sm font-medium">What’s on your mind {me?.displayName ?? ""}?</label>
             <textarea
               className="mt-1 w-full rounded-lg border p-3"
               rows={4}
@@ -164,11 +109,7 @@ export default function Today() {
             {errors.text && <p className="mt-1 text-sm text-red-600">{errors.text.message}</p>}
           </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="rounded-lg bg-black px-4 py-2 text-white disabled:opacity-60"
-          >
+          <button type="submit" disabled={isSubmitting} className="rounded-lg bg-black px-4 py-2 text-white disabled:opacity-60">
             {isSubmitting ? "Saving…" : "Save & Generate Garden"}
           </button>
 
@@ -232,41 +173,44 @@ export default function Today() {
                   </div>
                 )}
 
-                {e.garden.imageUrl && e.garden.status === "READY" && (
+                {e.garden?.publicId && e.garden.status === "READY" && (
                   <div className="mt-2">
-                    <img src={e.garden.imageUrl} alt={`Garden for ${e.garden.periodKey}`} className="mt-2 w-full rounded-md" />
+                    <AdvancedImage
+                      key={e.garden.publicId}
+                      cldImg={gardenThumb(e.garden.publicId)}
+                      plugins={[
+                        lazyload(),
+                        responsive({ steps: [256, 384, 512, 640, 768, 1024] }),
+                        placeholder({ mode: "blur" }),
+                      ]}
+                      alt={`Garden for ${e.garden.periodKey}`}
+                      decoding="async"
+                      className="mt-2 w-full rounded-md"
+                    />
+
                     <div className="mt-2 flex flex-wrap gap-2">
                       <button
                         className="rounded border px-3 py-1 text-sm"
-                        onClick={() => downloadImage(e.garden.imageUrl!, `mood-garden-${e.garden.periodKey}.png`)}
+                        onClick={() =>
+                          downloadImage(
+                            gardenDownloadUrl(e.garden.publicId, `mood-garden-${e.garden.periodKey}.png`),
+                            `mood-garden-${e.garden.periodKey}.png`
+                          )
+                        }
                       >
                         Download
                       </button>
-                      <button
-                        className="rounded border px-3 py-1 text-sm"
-                        onClick={() => navigator.clipboard.writeText(e.garden.shareUrl ?? e.garden.imageUrl!)}
-                      >
-                        Copy Link
-                      </button>
+
                       <button
                         className="rounded border px-3 py-1 text-sm"
                         onClick={() =>
-                          shareNative(e.garden.shareUrl ?? e.garden.imageUrl!, `My Mood Garden for ${e.garden.periodKey} 🌱 #MoodGardens`)
+                          shareNative(
+                            e.garden.shareUrl ?? gardenShareUrl(e.garden.publicId),
+                            `My Mood Garden for ${e.garden.periodKey} 🌱 #MoodGardens`
+                          )
                         }
                       >
                         Share
-                      </button>
-                      <button
-                        className="rounded border px-3 py-1 text-sm"
-                        onClick={() => shareFacebook(e.garden.shareUrl ?? e.garden.imageUrl!, `My Mood Garden for ${e.garden.periodKey}`)}
-                      >
-                        Share to Facebook
-                      </button>
-                      <button
-                        className="rounded border px-3 py-1 text-sm"
-                        onClick={() => shareX(e.garden.shareUrl ?? e.garden.imageUrl!, `My Mood Garden for ${e.garden.periodKey} 🌱`)}
-                      >
-                        Share to X
                       </button>
                     </div>
                   </div>
@@ -433,42 +377,42 @@ function TodayGardenPreview({ periodKey, statusText }: PreviewProps) {
             </div>
           )}
 
-          {garden.imageUrl && garden.status === "READY" && (
+          {garden.publicId && garden.status === "READY" && (
             <div className="mt-2">
-              <img src={garden.imageUrl} alt={`Garden for ${garden.periodKey}`} className="w-full rounded-lg" />
+              <AdvancedImage
+                key={garden.publicId}
+                cldImg={gardenThumb(garden.publicId)}
+                plugins={[lazyload(), responsive({ steps: [256, 384, 512, 640, 768, 1024] }), placeholder({ mode: "blur" })]}
+                alt={`Garden for ${garden.periodKey}`}
+                decoding="async"
+                className="w-full rounded-lg"
+              />
+
               {garden.summary && <p className="mt-2 text-sm text-gray-600">{garden.summary}</p>}
+
               <div className="mt-3 flex flex-wrap gap-2">
                 <button
                   className="rounded border px-3 py-1 text-sm"
-                  onClick={() => downloadImage(garden.imageUrl!, `mood-garden-${garden.periodKey}.png`)}
+                  onClick={() =>
+                    downloadImage(
+                      gardenDownloadUrl(garden.publicId, `mood-garden-${garden.periodKey}.png`),
+                      `mood-garden-${garden.periodKey}.png`
+                    )
+                  }
                 >
                   Download
                 </button>
-                <button
-                  className="rounded border px-3 py-1 text-sm"
-                  onClick={() => navigator.clipboard.writeText(garden.shareUrl ?? garden.imageUrl!)}
-                >
-                  Copy Link
-                </button>
+
                 <button
                   className="rounded border px-3 py-1 text-sm"
                   onClick={() =>
-                    shareNative(garden.shareUrl ?? garden.imageUrl!, `My Mood Garden for ${garden.periodKey} 🌱 #MoodGardens`)
+                    shareNative(
+                      garden.shareUrl ?? gardenShareUrl(garden.publicId),
+                      `My Mood Garden for ${garden.periodKey} 🌱 #MoodGardens`
+                    )
                   }
                 >
                   Share
-                </button>
-                <button
-                  className="rounded border px-3 py-1 text-sm"
-                  onClick={() => shareFacebook(garden.shareUrl ?? garden.imageUrl!, `My Mood Garden for ${garden.periodKey}`)}
-                >
-                  Share to Facebook
-                </button>
-                <button
-                  className="rounded border px-3 py-1 text-sm"
-                  onClick={() => shareX(garden.shareUrl ?? garden.imageUrl!, `My Mood Garden for ${garden.periodKey} 🌱`)}
-                >
-                  Share to X
                 </button>
               </div>
             </div>
@@ -492,17 +436,11 @@ function useEntriesFeed(opts?: { excludeDayKey?: string; isAuthed?: boolean }) {
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const [totalFetched, setTotalFetched] = useState<number>(0);
 
-  const {
-    data,
-    loading: initialLoadingRaw,
-    error: initialErrorRaw,
-    fetchMore,
-    refetch,
-  } = useQuery(MyEntries, {
+  const { data, loading: initialLoadingRaw, error: initialErrorRaw, fetchMore, refetch } = useQuery(MyEntries, {
     variables: { limit: LIMIT, offset: 0 },
     notifyOnNetworkStatusChange: true,
-    skip, 
-    fetchPolicy: "network-only", 
+    skip,
+    fetchPolicy: "network-only",
   });
 
   // Force stable empty state when skipped
