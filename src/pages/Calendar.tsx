@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { useQuery } from "@apollo/client";
 import { MyGardensByMonth, EntryByDay } from "../graphql";
 import { periodKeyFor, isoDayKey, gardenThumb, gardenLarge } from "../utils";
@@ -8,15 +8,9 @@ import {
   lazyload,
   placeholder,
 } from "@cloudinary/react";
-import { useAuth } from "../auth/context";
 import { gardenDownloadUrl, gardenShareUrl } from "../utils";
-import {
-  shareNative,
-  shareFacebook,
-  shareX,
-  copyLink,
-  downloadImage,
-} from "../utils";
+import { downloadImage } from "../utils";
+import { ShareMenu } from "../components/ShareMenu";
 
 type GardenCell = {
   publicId?: string | null;
@@ -36,13 +30,11 @@ export default function Calendar() {
   const thisMonth = new Date().toLocaleString("default", { month: "long" });
   const [selectedMonth, setSelectedMonth] = useState<string>(thisMonth);
   const [isEditing, setIsEditing] = useState<boolean>(false);
-
   const months = Array.from({ length: 12 }, (_, i) =>
     new Date(0, i).toLocaleString("default", { month: "long" })
   );
   const monthIndex = months.findIndex((m) => m === selectedMonth);
   const year = 2025;
-
   const daysInMonth = useMemo(
     () => new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate(),
     [year, monthIndex]
@@ -55,7 +47,6 @@ export default function Calendar() {
     const sun0 = firstOfMonthUTC.getUTCDay();
     return (sun0 + 6) % 7; // Mon-first
   }, [firstOfMonthUTC]);
-
   const cells = useMemo(() => {
     const arr: (number | null)[] = [];
     for (let i = 0; i < leadingBlanks; i++) arr.push(null);
@@ -63,7 +54,6 @@ export default function Calendar() {
     while (arr.length % 7 !== 0) arr.push(null);
     return arr;
   }, [leadingBlanks, daysInMonth]);
-
   // Data
   const monthKey = useMemo(
     () => periodKeyFor("MONTH", new Date(Date.UTC(year, monthIndex, 1))),
@@ -72,13 +62,27 @@ export default function Calendar() {
   const { data, loading, error } = useQuery(MyGardensByMonth, {
     variables: { monthKey },
   });
-
   const byDay = useMemo(() => {
     const list = data?.myGardensByMonth ?? [];
     return Object.fromEntries(list.map((g: any) => [g.periodKey, g]));
   }, [data]);
-
   const [selected, setSelected] = useState<Selected | null>(null);
+
+  // Ordered gallery for this month (only days that have an image)
+  const gallery = useMemo(() => {
+    const list = data?.myGardensByMonth ?? [];
+    return list
+      .filter((g: any) => !!g.publicId)
+      .sort((a: any, b: any) =>
+        String(a.periodKey).localeCompare(String(b.periodKey))
+      )
+      .map((g: any) => ({
+        dayKey: g.periodKey,
+        publicId: g.publicId,
+        summary: g.summary ?? null,
+        shareUrl: g?.shareUrl ?? null,
+      }));
+  }, [data]);
 
   return (
     <div className="mx-auto max-w-5xl px-2 py-2 sm:px-4 sm:py-4">
@@ -158,8 +162,6 @@ export default function Calendar() {
                   <button
                     type="button"
                     onClick={() => {
-                      console.log("Selected garden:", g);
-
                       setSelected({
                         dayKey: key,
                         publicId: g.publicId!,
@@ -196,7 +198,12 @@ export default function Calendar() {
       </div>
       {/* Modal */}
       {selected && (
-        <PreviewModal selected={selected} onClose={() => setSelected(null)} />
+        <PreviewModal
+          selected={selected}
+          onClose={() => setSelected(null)}
+          gallery={gallery}
+          onSelect={(item) => setSelected(item)} // allow modal to change the selected day
+        />
       )}
     </div>
   );
@@ -207,11 +214,14 @@ export default function Calendar() {
 function PreviewModal({
   selected,
   onClose,
+  gallery,
+  onSelect,
 }: {
   selected: Selected;
   onClose: () => void;
+  gallery: Selected[];
+  onSelect: (s: Selected) => void;
 }) {
-  const { isAuthed } = useAuth(); // <-- if you need auth for the diary entry
   const [imgReady, setImgReady] = useState(false);
 
   const {
@@ -221,7 +231,6 @@ function PreviewModal({
   } = useQuery(EntryByDay, {
     variables: { dayKey: selected.dayKey },
     fetchPolicy: "network-only", // always fetch the latest text
-    skip: !isAuthed, // don't call if not signed in
   });
 
   const entryText: string | null = data?.entryByDay?.text ?? null;
@@ -239,6 +248,36 @@ function PreviewModal({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  // Find where we are in the gallery
+  const index = useMemo(
+    () => gallery.findIndex((g) => g.dayKey === selected.dayKey),
+    [gallery, selected.dayKey]
+  );
+
+  const hasPrev = index > 0;
+  const hasNext = index >= 0 && index < gallery.length - 1;
+
+  const goPrev = useCallback(() => {
+    if (!hasPrev) return;
+    onSelect(gallery[index - 1]);
+  }, [hasPrev, gallery, index, onSelect]);
+
+  const goNext = useCallback(() => {
+    if (!hasNext) return;
+    onSelect(gallery[index + 1]);
+  }, [hasNext, gallery, index, onSelect]);
+
+  // Arrow keys: Esc closes (already), add ←/→ to navigate
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft") goPrev();
+      if (e.key === "ArrowRight") goNext();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose, goPrev, goNext]);
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
@@ -250,6 +289,46 @@ function PreviewModal({
     >
       <div className="absolute inset-0 bg-black/60" />
       <div className="relative z-10 mx-2 flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
+        {/* Left arrow */}
+        <button
+          type="button"
+          onClick={goPrev}
+          disabled={!hasPrev}
+          aria-label="Previous day"
+          className="group absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow
+             hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        {/* Right arrow */}
+        <button
+          type="button"
+          onClick={goNext}
+          disabled={!hasNext}
+          aria-label="Next day"
+          className="group absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow
+             hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
         {/* Header */}
         <div className="flex items-center justify-between border-b px-4 py-3 shrink-0">
           <div className="min-w-0">
@@ -275,36 +354,41 @@ function PreviewModal({
         <div className="flex-1 overflow-y-auto">
           <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2">
             {/* Image */}
+            {/* Image */}
             <div className="relative">
-              <AdvancedImage
-                key={selected.publicId}
-                cldImg={gardenLarge(selected.publicId)}
-                plugins={[
-                  lazyload(),
-                  responsive({ steps: [480, 640, 800, 1024, 1280, 1600] }),
-                  placeholder({ mode: "blur" }),
-                ]}
-                alt={`Garden for ${selected.dayKey}`}
-                decoding="async"
-                className="w-full rounded-lg"
-                onLoad={() => setImgReady(true)}
-              />
-              {!imgReady && (
-                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-white/60 backdrop-blur-sm">
-                  <div className="flex items-center gap-2 text-sm text-gray-700">
-                    <svg
-                      className="h-4 w-4 animate-spin"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                    </svg>
-                    Loading image…
+              {/* Reserve space: pick a ratio (square shown here) */}
+              <div className="relative w-full aspect-square rounded-lg overflow-hidden">
+                <AdvancedImage
+                  key={selected.publicId}
+                  cldImg={gardenLarge(selected.publicId)}
+                  plugins={[
+                    lazyload(),
+                    responsive({ steps: [480, 640, 800, 1024, 1280, 1600] }),
+                    placeholder({ mode: "blur" }),
+                  ]}
+                  alt={`Garden for ${selected.dayKey}`}
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  onLoad={() => setImgReady(true)}
+                />
+
+                {!imgReady && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-sm">
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <svg
+                        className="h-4 w-4 animate-spin"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                      </svg>
+                      Loading image…
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             {/* Diary entry */}
@@ -368,76 +452,6 @@ function PreviewModal({
           </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-function ShareMenu({ url, text }: { url: string; text: string }) {
-  const [open, setOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  const closeLater = () => setTimeout(() => setOpen(false), 0);
-
-  return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50"
-        aria-haspopup="menu"
-        aria-expanded={open}
-      >
-        Share ▾
-      </button>
-
-      {open && (
-        <div
-          role="menu"
-          className="absolute bottom-full mb-2 z-20 w-44 rounded-md border bg-white shadow-lg animate-fadeIn"
-        >
-          <button
-            role="menuitem"
-            className="block w-full px-3 py-2 text-left text-sm hover:bg-gray-50"
-            onClick={async () => {
-              await shareNative(url, text);
-              closeLater();
-            }}
-          >
-            Share (native)
-          </button>
-          <button
-            role="menuitem"
-            className="block w-full px-3 py-2 text-left text-sm hover:bg-gray-50"
-            onClick={() => {
-              shareFacebook(url, text);
-              closeLater();
-            }}
-          >
-            Share to Facebook
-          </button>
-          <button
-            role="menuitem"
-            className="block w-full px-3 py-2 text-left text-sm hover:bg-gray-50"
-            onClick={() => {
-              shareX(url, text);
-              closeLater();
-            }}
-          >
-            Share to X
-          </button>
-          <button
-            role="menuitem"
-            className="block w-full px-3 py-2 text-left text-sm hover:bg-gray-50"
-            onClick={async () => {
-              const ok = await copyLink(url);
-              setCopied(ok);
-              closeLater();
-              setTimeout(() => setCopied(false), 1500);
-            }}
-          >
-            {copied ? "Copied!" : "Copy link"}
-          </button>
-        </div>
-      )}
     </div>
   );
 }

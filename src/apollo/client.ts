@@ -1,12 +1,8 @@
 import { ApolloClient, InMemoryCache, createHttpLink, from } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
-import { API_BASE, gqlUrl } from "../lib/env";
+import { gqlUrl } from "../lib/env";
 
 export function makeApolloClient(onUnauthed?: () => void) {
-    const URI = gqlUrl();
-    console.log("[env]", { API_BASE, gql: gqlUrl(), PROD: import.meta.env.PROD });
-
-    console.log("[Apollo] GRAPHQL URI =", URI);
     const httpLink = createHttpLink({
         uri: gqlUrl(),            // <-- uses API_BASE
         credentials: "include",   // send cookies

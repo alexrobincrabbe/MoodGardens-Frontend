@@ -10,7 +10,6 @@ export default function AuthPanel() {
   });
   const me = userData?.me ?? null;
   useEffect(() => {
-    console.log("Me changed:", me, userData);
   }, [me, userData]);
 
   const [email, setEmail] = useState("");
