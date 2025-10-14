@@ -13,7 +13,6 @@ import {
 import { Me } from "../graphql/auth";
 import { entrySchema, type EntryForm } from "../validation";
 import { isoDayKey } from "../utils";
-import { useAuth } from "../auth/context";
 import {
   AdvancedImage,
   lazyload,
