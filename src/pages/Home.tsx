@@ -1,14 +1,14 @@
 import AuthPanel from "../components/AuthPanel";
 import AccountDetails from "../components/AccountDetails";
 import { useQuery } from "@apollo/client";
-import { Me } from "../graphql/auth";
+import { User } from "../graphql/auth";
 
 export default function Home() {
-  const { data: userData } = useQuery(Me, {
+  const { data: userData } = useQuery(User, {
     fetchPolicy: "cache-and-network",
     nextFetchPolicy: "cache-first",
   });
-  const me = userData?.me ?? null;
+  const user = userData?.user ?? null;
   return (
     <section className="grid gap-4">
       <h1 className="text-2xl font-semibold">Grow a picture from your day</h1>
@@ -32,7 +32,7 @@ export default function Home() {
       <div className="mt-4">
         <AuthPanel />
       </div>
-      {me && (
+      {user && (
         <div className="mt-4">
           <AccountDetails />
         </div>

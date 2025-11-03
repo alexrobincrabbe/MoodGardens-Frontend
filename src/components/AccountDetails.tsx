@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { Me, UpdateDisplayName} from "../graphql/auth";
+import { User, UpdateDisplayName} from "../graphql/auth";
 import { useQuery, useMutation } from "@apollo/client";
 
 export default function AccountDetails() {
-  const { data: userData, loading: meLoading } = useQuery(Me, {
+  const { data: userData, loading: meLoading } = useQuery(User, {
     fetchPolicy: "cache-and-network",
     nextFetchPolicy: "cache-first",
   });
-  const me = userData?.me ?? null;
+  const user = userData?.user ?? null;
   
-  const [displayName, setDisplayName] = useState(me.displayName);
+  const [displayName, setDisplayName] = useState(user.displayName);
   const [displayNameMut, { loading: displayNameUpdating }] =
     useMutation(UpdateDisplayName);
 
@@ -20,7 +20,7 @@ export default function AccountDetails() {
     }
     await displayNameMut({
           variables: {displayName: displayName},
-          refetchQueries: [{ query: Me }],
+          refetchQueries: [{ query: User }],
         });
   }
     const busy = meLoading && displayNameUpdating;
@@ -28,7 +28,7 @@ export default function AccountDetails() {
   return (
     <div className="rounded-xl border p-4">
       <div className="flex items-center justify-between">
-        <div>{me.di}</div>
+        <div>{user.di}</div>
         <label className="block text-sm font-medium">Change Display Name</label>
         <input
           className="mt-1 w-full rounded-lg border p-2"

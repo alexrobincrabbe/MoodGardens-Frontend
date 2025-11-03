@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
 import { useQuery } from "@apollo/client";
 import { MyGardensByMonth, EntryByDay } from "../graphql";
-import { periodKeyFor, isoDayKey, gardenThumb, gardenLarge } from "../utils";
+import { periodKeyFor, isoDayKey, gardenThumb, gardenLarge, useAuthData } from "../utils";
 import {
   AdvancedImage,
   responsive,
@@ -27,6 +27,8 @@ type Selected = {
 };
 
 export default function Calendar() {
+    const { authed, authReady } = useAuthData();
+  const skip = !authReady || !authed;
   const thisMonth = new Date().toLocaleString("default", { month: "long" });
   const [selectedMonth, setSelectedMonth] = useState<string>(thisMonth);
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -59,8 +61,14 @@ export default function Calendar() {
     () => periodKeyFor("MONTH", new Date(Date.UTC(year, monthIndex, 1))),
     [year, monthIndex]
   );
-  const { data, loading, error } = useQuery(MyGardensByMonth, {
+   const { data, loading, error } = useQuery(MyGardensByMonth, {
     variables: { monthKey },
+    skip,
+    // optional: force a real check after login and avoid stale cache flashes
+    fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
+    returnPartialData: false,
+    notifyOnNetworkStatusChange: true,
   });
   const byDay = useMemo(() => {
     const list = data?.myGardensByMonth ?? [];

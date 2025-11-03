@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
-import { Me, Register, Login, Logout } from "../graphql/auth";
+import { User, Register, Login, Logout } from "../graphql/auth";
 
 export default function AuthPanel() {
   const client = useApolloClient();
-  const { data:userData, loading: meLoading } = useQuery(Me, {
+  const { data:userData, loading: meLoading } = useQuery(User, {
     fetchPolicy: "cache-and-network",
     nextFetchPolicy: "cache-first",
   });
-  const me = userData?.me ?? null;
+  const user = userData?.user ?? null;
   useEffect(() => {
-  }, [me, userData]);
+  }, [user, userData]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,7 +46,7 @@ export default function AuthPanel() {
         }
         const newUser = await registerMut({
           variables: registerDetails,
-          refetchQueries: [{ query: Me }],
+          refetchQueries: [{ query: User }],
         });
         await client.resetStore();
 
@@ -58,7 +58,7 @@ export default function AuthPanel() {
       } else {
         const loginUser = await loginMut({
           variables: loginDetails,
-          refetchQueries: [{ query: Me }],
+          refetchQueries: [{ query: User }],
         });
         await client.resetStore(); 
 
@@ -88,7 +88,7 @@ export default function AuthPanel() {
     try {
       await logoutMut();
       await client.resetStore();
-      client.writeQuery({ query: Me, data: { me: null } });
+      client.writeQuery({ query: User, data: { user: null } });
       await client.clearStore();
       setMsg("Signed out.");
     } catch (err: any) {
@@ -96,13 +96,13 @@ export default function AuthPanel() {
     }
   }
 
-  if (me) {
+  if (user) {
     return (
       <div className="rounded-xl border p-4">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-gray-600">Signed in as</p>
-            <p className="font-medium">{me.email}</p>
+            <p className="font-medium">{user.email}</p>
           </div>
           <button
             onClick={handleLogout}
