@@ -1,6 +1,7 @@
 import { GardenFeedItem, TodayEntryForm, LoadMoreTrigger, TodayGardenPreview  } from "../components";
 import {useAuthData, useEntriesFeed} from "../hooks";
 import { isoDayKey, formatDayKey } from "../utils";
+import type { Garden } from "../types";
 
 export function Today() {
   const { user, authed, authReady } = useAuthData();
@@ -63,29 +64,7 @@ export function Today() {
           <p className="text-sm text-gray-500">No entries yet.</p>
         )}
 
-        {items.map((e) => {
-          const isTodayEntry = e.dayKey === today;
-
-          return (
-            <article key={e.id} className="rounded-lg border p-3">
-              <div className="flex items-center justify-between text-xs text-gray-500">
-                <span>{formatDayKey(e.dayKey)}</span>
-              </div>
-
-              <p className="mt-1 text-sm">{e.text}</p>
-
-              {isTodayEntry ? (
-                <div className="mt-2">
-                  <TodayGardenPreview periodKey={today} />
-                </div>
-              ) : (
-                <GardenFeedItem garden={e.garden} day={e.dayKey} />
-              )}
-            </article>
-          );
-        })}
-
-        {/* Only mount the trigger when we actually have more pages */}
+        <GardensFeed items={items} today={today} />
         {hasMore && (
           <LoadMoreTrigger
             onVisible={loadMore}
@@ -98,6 +77,39 @@ export function Today() {
   );
 }
 
-/* ---------------------- TodayGardenPreview ---------------------- */
+type FeedItem = {
+  id: string;
+  dayKey: string;
+  text: string;
+  garden: Garden;
+};
 
-/* ---------------------- Entries feed hook & components ---------------------- */
+type GardensFeedProps = {
+    items: FeedItem[],
+    today: string,
+}
+
+function GardensFeed ({items, today}:GardensFeedProps){
+    return(
+        <>
+        {items.map((e) => {
+          const isTodayEntry = e.dayKey === today;
+          return (
+            <article key={e.id} className="rounded-lg border p-3">
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <span>{formatDayKey(e.dayKey)}</span>
+              </div>
+              <p className="mt-1 text-sm">{e.text}</p>
+              {isTodayEntry ? (
+                <div className="mt-2">
+                  <TodayGardenPreview periodKey={today} />
+                </div>
+              ) : (
+                <GardenFeedItem garden={e.garden} day={e.dayKey} />
+              )}
+            </article>
+          );
+        })}
+        </>
+    )
+}

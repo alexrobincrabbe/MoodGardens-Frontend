@@ -1,0 +1,90 @@
+import { AdvancedImage, responsive, lazyload } from "@cloudinary/react";
+import { placeholder } from "@cloudinary/react";
+import { isoDayKey, gardenThumb } from "../utils";
+import type {SelectedGarden} from "../types"
+
+type GardenCell = {
+  publicId?: string | null;
+  imageUrl?: string | null;
+  summary?: string | null;
+  status?: string | null;
+};
+
+type CalendarGridProps = {
+  cells: (number | null)[];
+  calendarViewGardens: Record<string, GardenCell>;
+  selectedYear: number;
+  monthIndex: number;
+  setSelected: React.Dispatch<React.SetStateAction<SelectedGarden | null>>;
+};
+
+export function CalendarGrid({
+  cells,
+  calendarViewGardens,
+  selectedYear,
+  monthIndex,
+  setSelected,
+}: CalendarGridProps) {
+  return (
+    <div className="grid grid-cols-7 gap-px sm:gap-2 md:gap-3">
+      {cells.map((day, idx) => {
+        if (!day) {
+          return (
+            <div
+              key={`blank-${idx}`}
+              className="min-h-16 rounded border border-gray-100 bg-gray-50 sm:min-h-24"
+            />
+          );
+        }
+
+        const dUTC = new Date(Date.UTC(selectedYear, monthIndex, day));
+        const key = isoDayKey(dUTC);
+        const g = calendarViewGardens[key] as GardenCell | undefined;
+
+        return (
+          <div
+            className="flex flex-col gap-1 rounded border border-gray-200 bg-white p-1 sm:gap-2 sm:p-2"
+            key={key}
+          >
+            <div className="text-[10px] text-gray-500">{day}</div>
+            <div className="relative aspect-square w-full overflow-hidden rounded bg-gray-50">
+              {g?.publicId ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelected({
+                      dayKey: key,
+                      publicId: g.publicId!,
+                      summary: g.summary,
+                      shareUrl: (g as any)?.shareUrl ?? null,
+                    });
+                  }}
+                  className="absolute inset-0"
+                  aria-label={`Open garden preview for ${key}`}
+                  title="Open preview"
+                >
+                  <AdvancedImage
+                    key={g.publicId}
+                    cldImg={gardenThumb(g.publicId!)}
+                    plugins={[
+                      lazyload(),
+                      responsive({ steps: [160, 220, 300, 420, 560, 720] }),
+                      placeholder({ mode: "blur" }),
+                    ]}
+                    alt={g.summary ?? "Garden preview"}
+                    decoding="async"
+                    className="h-full w-full object-cover"
+                  />
+                </button>
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-[10px] text-gray-400">
+                  Empty
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
