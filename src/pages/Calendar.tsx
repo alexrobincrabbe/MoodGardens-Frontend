@@ -1,16 +1,19 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
 import { useQuery } from "@apollo/client";
 import { MyGardensByMonth, EntryByDay } from "../graphql";
-import { periodKeyFor, isoDayKey, gardenThumb, gardenLarge, useAuthData } from "../utils";
+import { AdvancedImage, responsive, lazyload } from "@cloudinary/react";
+import { placeholder } from "@cloudinary/react";
+import { ShareMenu } from "../components";
+import { useAuthData } from "../hooks";
 import {
-  AdvancedImage,
-  responsive,
-  lazyload,
-  placeholder,
-} from "@cloudinary/react";
-import { gardenDownloadUrl, gardenShareUrl } from "../utils";
-import { downloadImage } from "../utils";
-import { ShareMenu } from "../components/ShareMenu";
+  periodKeyFor,
+  isoDayKey,
+  gardenThumb,
+  gardenLarge,
+  gardenDownloadUrl,
+  gardenShareUrl,
+  downloadImage,
+} from "../utils";
 
 type GardenCell = {
   publicId?: string | null;
@@ -26,8 +29,8 @@ type Selected = {
   shareUrl?: string | null; // <-- add this
 };
 
-export default function Calendar() {
-    const { authed, authReady } = useAuthData();
+export function Calendar() {
+  const { authed, authReady } = useAuthData();
   const skip = !authReady || !authed;
   const thisMonth = new Date().toLocaleString("default", { month: "long" });
   const [selectedMonth, setSelectedMonth] = useState<string>(thisMonth);
@@ -61,7 +64,7 @@ export default function Calendar() {
     () => periodKeyFor("MONTH", new Date(Date.UTC(year, monthIndex, 1))),
     [year, monthIndex]
   );
-   const { data, loading, error } = useQuery(MyGardensByMonth, {
+  const { data, loading, error } = useQuery(MyGardensByMonth, {
     variables: { monthKey },
     skip,
     // optional: force a real check after login and avoid stale cache flashes

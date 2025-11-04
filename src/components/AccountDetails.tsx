@@ -2,7 +2,7 @@ import { useState } from "react";
 import { User, UpdateDisplayName} from "../graphql/auth";
 import { useQuery, useMutation } from "@apollo/client";
 
-export default function AccountDetails() {
+export function AccountDetails() {
   const { data: userData, loading: meLoading } = useQuery(User, {
     fetchPolicy: "cache-and-network",
     nextFetchPolicy: "cache-first",

@@ -1,9 +1,9 @@
-import AuthPanel from "../components/AuthPanel";
-import AccountDetails from "../components/AccountDetails";
 import { useQuery } from "@apollo/client";
 import { User } from "../graphql/auth";
+import {AccountDetails, AuthPanel} from "../components";
 
-export default function Home() {
+
+export function Home() {
   const { data: userData } = useQuery(User, {
     fetchPolicy: "cache-and-network",
     nextFetchPolicy: "cache-first",

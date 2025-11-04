@@ -1,4 +1,3 @@
-// apps/web/api/share/[shareId].ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 const API_BASE = (process.env.API_BASE || "https://api.yourdomain.tld").replace(/\/+$/,"");
@@ -11,8 +10,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const shareId = Array.isArray(req.query.shareId) ? req.query.shareId[0] : String(req.query.shareId || "");
     if (!shareId) return res.status(400).send("Bad request");
-
-    // derive canonical from the request (works for previews + custom domains)
     const proto = (req.headers["x-forwarded-proto"] as string) || "https";
     const host = req.headers.host || "localhost";
     const canonical = `${proto}://${host}/share/${shareId}`;
@@ -50,8 +47,6 @@ ${meta.img ? `<img class="img" src="${meta.img}" alt="Mood garden image">` : ""}
 <a class="btn" href="${meta.viewLink}">Open Mood Gardens</a>
 </div></div>
 </body></html>`;
-
-    // cache on the edge/CDN (10 minutes), allow quick background refresh
     res.setHeader("Cache-Control", "public, s-maxage=600, stale-while-revalidate=86400");
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(html);

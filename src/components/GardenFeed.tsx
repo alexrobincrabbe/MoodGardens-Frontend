@@ -1,6 +1,6 @@
-import { ShareMenu } from "../components/ShareMenu";
 import { AdvancedImage } from "@cloudinary/react";
 import { lazyload, responsive, placeholder } from "@cloudinary/react";
+import { ShareMenu } from "../components";
 import {
   gardenThumb,
   gardenDownloadUrl,
@@ -27,9 +27,11 @@ export function GardenFeedItem({ garden, day }: props) {
   } 
   return (
     <div className="mt-2">
+        {garden.status !== "READY" &&
       <p className="text-xs text-gray-600">
         Garden status: <span className="font-medium">{garden.status}</span>
       </p>
+        }   
 
       {garden.status !== "READY" && typeof garden.progress === "number" && (
         <div className="mt-1">

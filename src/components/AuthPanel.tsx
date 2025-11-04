@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 import { User, Register, Login, Logout } from "../graphql/auth";
 
-export default function AuthPanel() {
+export function AuthPanel() {
   const client = useApolloClient();
   const { data:userData, loading: meLoading } = useQuery(User, {
     fetchPolicy: "cache-and-network",

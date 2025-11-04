@@ -2,13 +2,10 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { ApolloProvider } from "@apollo/client";
-
-import App from "./App";
-import Home from "./pages/Home";
-import Today from "./pages/Today";
-import Calendar from "./pages/Calendar";
-import "./index.css";
 import { apolloClient } from "./apollo/client";
+import App from "./App";
+import "./index.css";
+import {Home, Today, Calendar} from "./pages";
 
 const router = createBrowserRouter([
   {
