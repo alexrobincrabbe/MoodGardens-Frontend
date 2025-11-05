@@ -56,11 +56,6 @@ export function Home() {
         </div>
       </Modal>
 
-      {!user && (
-        <div className="mt-4">
-          <AuthPanel />
-        </div>
-      )}
       <div className="mt-4 flex flex-col items-center justify-center">
         <img src={plants} alt="images of plants" className="w-[400px]" />;
         <div className="flex items-center justify-center">
@@ -68,6 +63,12 @@ export function Home() {
           <img src={heart} alt="" className="w-[75px]  md:w-[130px]" />;
           <img src={sad} alt="" className="w-[75px] md:w-[130px]" />;
         </div>
+        
+      {!user && (
+        <div className="mt-4">
+          <AuthPanel />
+        </div>
+      )}
         {user && (
           <>
             <AccountDetails />
