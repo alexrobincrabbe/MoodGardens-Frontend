@@ -1,13 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User, UpdateDisplayName } from "../graphql/auth";
 import { useMutation } from "@apollo/client";
 import { useAuthData } from "../hooks";
 
 export function AccountDetails() {
   const { user, authReady } = useAuthData();
-  const [displayName, setDisplayName] = useState(user.displayName);
+  const [displayName, setDisplayName] = useState("");
   const [displayNameMut, { loading: displayNameUpdating }] =
     useMutation(UpdateDisplayName);
+  useEffect(() => {
+    setDisplayName(user?.displayName ?? "");
+  }, [user]);
 
   async function submitDisplayName(e: React.FormEvent) {
     e.preventDefault();
@@ -20,6 +23,22 @@ export function AccountDetails() {
     });
   }
   const busy = !authReady && displayNameUpdating;
+
+   if (!authReady) {
+    return (
+      <div className="rounded-xl border p-4 text-sm text-gray-500">
+        Checking your account…
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="rounded-xl border p-4 text-sm text-gray-500">
+        You’re signed out.
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-xl border p-4">
