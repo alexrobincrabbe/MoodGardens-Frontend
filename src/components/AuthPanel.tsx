@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { User } from "../graphql/auth";
-import { AuthPanelProvider, useAuthPanel } from "../contexts/authContext";
+import { AuthPanelProvider, useAuthPanel } from "../contexts";
 
 export function AuthPanel() {
   return (

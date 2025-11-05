@@ -11,4 +11,4 @@ export { YearMonthSelector } from "./YearMonthSelector";
 export { WeekdayHeaders} from "./WeekdayHeaders";
 export {CalendarGrid} from "./CalendarGrid";
 export {LoadingErrorMessage} from "./LoadingErrorMessage.tsx";
-export {SignOutButton} from "./signOutButton.tsx";
+export {SignOutButton} from "./SignOutButton.tsx";
