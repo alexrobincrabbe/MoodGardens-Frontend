@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { User, UpdateDisplayName } from "../graphql/auth";
 import { useMutation } from "@apollo/client";
 import { useAuthData } from "../hooks";
+import toast from "react-hot-toast";
 
 export function AccountDetails() {
   const { user, authReady } = useAuthData();
@@ -21,12 +22,13 @@ export function AccountDetails() {
       variables: { displayName: displayName },
       refetchQueries: [{ query: User }],
     });
+    toast.success("Display name updated!")
   }
   const busy = !authReady && displayNameUpdating;
 
    if (!authReady) {
     return (
-      <div className="rounded-xl border p-4 text-sm text-gray-500">
+      <div className="rounded-xl bg-peach-cream p-4 text-sm text-gray-500">
         Checking your account…
       </div>
     );
@@ -41,12 +43,12 @@ export function AccountDetails() {
   }
 
   return (
-    <div className="rounded-xl border p-4">
-      <div className="flex items-center justify-between">
+    <div className="rounded-xl flex justify-center p-4">
+      <div className="flex flex-col w-50 items-center justify-center">
         <div>{user.di}</div>
-        <label className="block text-sm font-medium">Change Display Name</label>
+        <label className="block m-2 w-full text-center text-sm font-medium">Change Display Name</label>
         <input
-          className="mt-1 w-full rounded-lg border p-2"
+          className="m-2 pb-1 w-full rounded-lg text-center bg-charcoal-grey p-0 text-2xl text-pastel-aqua"
           placeholder="choose a name"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
@@ -54,7 +56,7 @@ export function AccountDetails() {
         />
         <button
           onClick={submitDisplayName}
-          className="rounded-lg border px-3 py-1 text-sm hover:bg-gray-50 disabled:opacity-60"
+          className="m-2 w-full rounded-lg bg-pastel-aqua px-3 py-1 text-sm hover:bg-gray-50 disabled:opacity-60"
         >
           {displayNameUpdating ? "Updating..." : "Update"}
         </button>

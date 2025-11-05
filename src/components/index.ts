@@ -12,3 +12,4 @@ export { WeekdayHeaders} from "./WeekdayHeaders";
 export {CalendarGrid} from "./CalendarGrid";
 export {LoadingErrorMessage} from "./LoadingErrorMessage.tsx";
 export {SignOutButton} from "./SignOutButton.tsx";
+export {Modal} from "./Modal.tsx";

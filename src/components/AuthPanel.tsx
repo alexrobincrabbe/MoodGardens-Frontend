@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { User } from "../graphql/auth";
 import { AuthPanelProvider, useAuthPanel } from "../contexts";
+import toast from "react-hot-toast";
 
 export function AuthPanel() {
   return (
@@ -68,10 +69,10 @@ function RegisterLoginForm() {
           refetchQueries: [{ query: User }],
         });
         await client.resetStore();
-
         const user = newUser.data?.register?.user;
         if (!user) throw new Error("Unexpected response.");
         setMsg("Registered & signed in.");
+        toast.success(`Registered with email address ${loginDetails.email}`)
         setPassword("");
         setDisplayName("");
       } else {
@@ -83,6 +84,7 @@ function RegisterLoginForm() {
 
         const user = loginUser.data?.login?.user;
         if (!user) throw new Error("Unexpected response.");
+        toast.success(`Signed in as ${loginDetails.email}`)
         setMsg("Signed in.");
         setPassword("");
       }
