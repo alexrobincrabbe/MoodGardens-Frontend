@@ -32,7 +32,7 @@ export function CalendarGrid({
           return (
             <div
               key={`blank-${idx}`}
-              className="min-h-16 rounded border border-gray-100 bg-gray-50 sm:min-h-24"
+              className="min-h-16 rounded border border-gray-100 bg-transparent sm:min-h-24"
             />
           );
         }

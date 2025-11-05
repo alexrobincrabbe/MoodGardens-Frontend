@@ -1,14 +1,10 @@
 import { useState } from "react";
-import { User, UpdateDisplayName} from "../graphql/auth";
-import { useQuery, useMutation } from "@apollo/client";
+import { User, UpdateDisplayName } from "../graphql/auth";
+import { useMutation } from "@apollo/client";
+import { useAuthData } from "../hooks";
 
 export function AccountDetails() {
-  const { data: userData, loading: meLoading } = useQuery(User, {
-    fetchPolicy: "cache-and-network",
-    nextFetchPolicy: "cache-first",
-  });
-  const user = userData?.user ?? null;
-  
+  const { user, authReady } = useAuthData();
   const [displayName, setDisplayName] = useState(user.displayName);
   const [displayNameMut, { loading: displayNameUpdating }] =
     useMutation(UpdateDisplayName);
@@ -19,11 +15,11 @@ export function AccountDetails() {
       return;
     }
     await displayNameMut({
-          variables: {displayName: displayName},
-          refetchQueries: [{ query: User }],
-        });
+      variables: { displayName: displayName },
+      refetchQueries: [{ query: User }],
+    });
   }
-    const busy = meLoading && displayNameUpdating;
+  const busy = !authReady && displayNameUpdating;
 
   return (
     <div className="rounded-xl border p-4">
@@ -37,9 +33,12 @@ export function AccountDetails() {
           onChange={(e) => setDisplayName(e.target.value)}
           disabled={busy}
         />
-        <button 
-        onClick={submitDisplayName}
-        className="rounded-lg border px-3 py-1 text-sm hover:bg-gray-50 disabled:opacity-60">{ displayNameUpdating ? "Updating..." : "Update"}</button>
+        <button
+          onClick={submitDisplayName}
+          className="rounded-lg border px-3 py-1 text-sm hover:bg-gray-50 disabled:opacity-60"
+        >
+          {displayNameUpdating ? "Updating..." : "Update"}
+        </button>
       </div>
     </div>
   );

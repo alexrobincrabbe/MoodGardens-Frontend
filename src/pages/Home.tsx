@@ -1,6 +1,6 @@
 import { useQuery } from "@apollo/client";
 import { User } from "../graphql/auth";
-import {AccountDetails, AuthPanel} from "../components";
+import {AccountDetails, AuthPanel,SignOutButton} from "../components";
 
 
 export function Home() {
@@ -10,8 +10,8 @@ export function Home() {
   });
   const user = userData?.user ?? null;
   return (
-    <section className="grid gap-4">
-      <h1 className="text-2xl font-semibold">Grow a picture from your day</h1>
+    <section className="bg-white p-10 rounded-4xl">
+      <h1 className="text-2xl text-center font-semibold text-soft-charcoal">Welcome to Mood Gardens</h1>
       <p className="text-sm text-neutral-600">
         Mood Gardens turns your feelings into symbolic little worlds -
         reflective spaces that mirror your inner self. Each garden is like a
@@ -29,12 +29,14 @@ export function Home() {
         Your email stays safe and private, used only to help you recover your
         account if you ever need - like a spare key kept under a plant pot.
       </p>
-      <div className="mt-4">
+      {!user && <div className="mt-4">
         <AuthPanel />
       </div>
+        }
       {user && (
         <div className="mt-4">
           <AccountDetails />
+          <SignOutButton />;
         </div>
       )}
     </section>
