@@ -13,7 +13,7 @@ export function Home() {
   const { user, authReady } = useAuthData();
 
   return (
-    <div className="m-auto flex w-fit flex-col items-center justify-center rounded-4xl bg-white p-10">
+    <div className="m-auto flex w-fit flex-col items-center justify-center rounded-4xl bg-white md:p-10">
       <h1 className="text-soft-charcoal text-center text-2xl font-semibold">
         Mood Gardens
       </h1>
