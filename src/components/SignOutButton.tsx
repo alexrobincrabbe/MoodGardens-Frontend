@@ -1,11 +1,10 @@
-import { useApolloClient, useMutation } from "@apollo/client";
+import {  useMutation } from "@apollo/client";
 import { Logout, User } from "../graphql/auth";
-import { useAuthData } from "../hooks";
+import { useAuthPanel } from "../contexts";
 import { toast } from "react-hot-toast";
 
 export function SignOutButton() {
-  const { user, authReady } = useAuthData();
-  const client = useApolloClient();
+  const { user, busy, client } = useAuthPanel();
   const [logoutMut, { loading: logoutLoading }] = useMutation(Logout);
 
   async function handleLogoutClick() {
@@ -20,7 +19,7 @@ export function SignOutButton() {
     }
   }
 
-  if (!authReady || !user) return null;
+  if (busy || !user) return null;
 
   return (
       <button

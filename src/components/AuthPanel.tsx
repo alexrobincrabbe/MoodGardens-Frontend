@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { User } from "../graphql/auth";
-import { AuthPanelProvider, useAuthPanel } from "../contexts";
+import { useAuthPanel } from "../contexts";
 import toast from "react-hot-toast";
 
 export function AuthPanel() {
   return (
-    <AuthPanelProvider>
+    
       <div className="rounded-xl border p-4">
         <div className="mb-3 flex gap-2">
           <SetModeButton buttonMode="login" />
@@ -13,7 +13,6 @@ export function AuthPanel() {
         </div>
         <RegisterLoginForm />
       </div>
-    </AuthPanelProvider>
   );
 }
 
@@ -105,7 +104,7 @@ function RegisterLoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <form onSubmit={handleSubmit} className="mt-4 space-y-3">
       <div>
         <label className="block text-sm font-medium">Email</label>
         <input

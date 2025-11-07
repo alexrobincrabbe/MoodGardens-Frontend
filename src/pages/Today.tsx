@@ -1,10 +1,11 @@
 import { GardenFeedItem, TodayEntryForm, LoadMoreTrigger, TodayGardenPreview  } from "../components";
-import {useAuthData, useEntriesFeed} from "../hooks";
+import {useEntriesFeed} from "../hooks";
 import { isoDayKey, formatDayKey } from "../utils";
 import type { Garden } from "../types";
+import { useAuthPanel } from "../contexts";
 
 export function Today() {
-  const { user, authed, authReady } = useAuthData();
+  const { authed, busy } = useAuthPanel();
   const today = isoDayKey();
   const {
     items,
@@ -14,7 +15,7 @@ export function Today() {
     refetchFeed,
     initialError,
     initialLoading,
-  } = useEntriesFeed({ authed });
+  } = useEntriesFeed({ authed:authed && !busy });
   const isTodayLogged = items.some((e) => e.dayKey === today);
 
   return (
@@ -26,20 +27,20 @@ export function Today() {
         </p>
       </header>
 
-      {!authReady && (
+      {busy && (
         <div className="rounded-md border bg-gray-50 p-3 text-sm text-gray-600">
           Checking session…
         </div>
       )}
 
-      {!authed && authReady && (
+      {!authed && !busy && (
         <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
           Please sign in to log entries and see your gardens.
         </div>
       )}
 
       {authed && !initialLoading && !isTodayLogged && (
-        <TodayEntryForm user={user} refetchFeed={refetchFeed} />
+        <TodayEntryForm refetchFeed={refetchFeed} />
       )}
 
       {authed && isTodayLogged && (
@@ -51,7 +52,7 @@ export function Today() {
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">Your entries</h2>
 
-        {!authed && authReady && (
+        {!authed && !busy && (
           <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
             Sign in to see your saved entries and gardens.
           </div>

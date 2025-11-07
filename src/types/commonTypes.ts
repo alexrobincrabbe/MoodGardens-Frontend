@@ -12,3 +12,5 @@ export type Garden = {
   shareUrl?: string | null;
   status: | "PENDING" | "READY" | "FAILED";
 };
+
+export type LinkClasses = ({ isActive }: { isActive: boolean }) => string;
