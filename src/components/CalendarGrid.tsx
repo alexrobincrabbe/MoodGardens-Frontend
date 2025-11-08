@@ -32,7 +32,7 @@ export function CalendarGrid({
           return (
             <div
               key={`blank-${idx}`}
-              className="min-h-16 rounded border border-gray-100 bg-transparent sm:min-h-24"
+              className="rounded bg-transparent sm:min-h-24"
             />
           );
         }
@@ -43,10 +43,10 @@ export function CalendarGrid({
 
         return (
           <div
-            className="flex flex-col gap-1 rounded border border-gray-200 bg-white p-1 sm:gap-2 sm:p-2"
+            className="relative flex flex-col gap-1 rounded border border-gray-200 bg-white sm:gap-2"
             key={key}
           >
-            <div className="text-[10px] text-gray-500">{day}</div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-2 text-xs md:text-xl text-white">{day}</div>
             <div className="relative aspect-square w-full overflow-hidden rounded bg-gray-50">
               {g?.publicId ? (
                 <button
@@ -78,7 +78,6 @@ export function CalendarGrid({
                 </button>
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center text-[10px] text-gray-400">
-                  Empty
                 </div>
               )}
             </div>
