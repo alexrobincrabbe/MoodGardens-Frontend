@@ -21,15 +21,15 @@ export function TodayEntryForm({ refetchFeed }: TodayEntryFormProps) {
     refetchFeed,
   });
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col justify-center items-center space-y-2">
+      <div className="w-full">
+        <label className="block text-sm">
           What’s on your mind {user?.displayName ?? ""}?
         </label>
         <textarea
           className="mt-1 w-full rounded-lg border p-3"
           rows={4}
-          placeholder="I felt stressed about the test, but proud I finished…"
+          placeholder="Write about your day. We’ll grow a Mood Garden."
           {...register("text")}
         />
         {errors.text && (
@@ -40,9 +40,9 @@ export function TodayEntryForm({ refetchFeed }: TodayEntryFormProps) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="rounded-lg bg-black px-4 py-2 text-white disabled:opacity-60"
+        className="w-fit rounded-lg bg-peach-cream px-4 py-2 hover:bg-emerald-400 font-extrabold disabled:opacity-60"
       >
-        {isSubmitting ? "Saving…" : "Save & Generate Garden"}
+        {isSubmitting ? "Generating…" : "Generate Garden"}
       </button>
 
       {statusText && <p className="mt-2 text-sm text-gray-600">{statusText}</p>}

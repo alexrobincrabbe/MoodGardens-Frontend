@@ -1,4 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Poiret+One&family=Zen+Loop:ital@0;1&display=swap');
 @import "tailwindcss";
+
+
+.large-text{
+    font-size: 150%;
+    font-weight: 600;
+}
+.zen-loop{
+      font-family: "Zen Loop", cursive;
+      font-size: larger;
+}
+
+.poiret{
+  font-family: "Poiret One", sans-serif;
+}
+
+@layer base {
+  html {
+    font-size: 18px; /* makes all text ~12.5% larger */
+    font-weight: 600;
+  }
+}
+
 
 @theme {
   --color-muted-sage: #bfc9b1;
@@ -13,7 +36,12 @@
   --color-pastel-aqua: #d8f1f4;
   --color-peach-cream: #fbe9db;
   --color-charcoal-grey: #3b3b3b;
---color-soft-charcoal: #6B6B6B;
---color-cool-bright-silver: #DADDE0;
---color-soft-luminous-gold:#D6B25E;
+  --color-soft-charcoal: #6b6b6b;
+  --color-cool-bright-silver: #dadde0;
+  --color-soft-luminous-gold: #d6b25e;
+  --color-plant-green:#a4dfcb;
+  --font-zen-loop:"Zen Loop";
+  --font-poiret-one:"Poiret One";
+  --color-heart-blue:#87ccd2;
+  --color-coral:#febb9c;
 }

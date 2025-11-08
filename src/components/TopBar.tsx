@@ -11,7 +11,7 @@ export function TopBar({ setSidebarOpen }: TopBarProps) {
   const { user, authReady } = useAuthData();
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur md:h-[72px] md:p-2">
+    <header className="sticky top-0 z-50 shadow-md bg-white backdrop-blur md:h-[72px] md:p-2">
       <div className="mx-auto flex items-center justify-between">
         {/* Left: logo + burger (burger only on mobile) */}
         <div className="flex items-center">
@@ -19,14 +19,14 @@ export function TopBar({ setSidebarOpen }: TopBarProps) {
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
-            className="rounded-md p-1.5 text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-emerald-400 focus:outline-none md:hidden"
+            className="rounded-md p-1.5 text-plant-green hover:bg-gray-100 focus:ring-2 focus:ring-emerald-400 focus:outline-none md:hidden"
             aria-label="Open navigation"
           >
             <Menu className="h-12 w-12" />
           </button>
-          <span className="hidden items-center gap-2 font-bold text-emerald-800 md:flex">
+          <span className="hidden items-center gap-2 text-plant-green md:flex">
             <img src={logo} className="h-12"></img>
-            <span className="w-full text-center text-3xl">Mood Gardens</span>
+            <span className="font-zen-loop w-full text-center text-shadow-black text-5xl">mood gardens</span>
           </span>
         </div>
 

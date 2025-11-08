@@ -8,7 +8,7 @@ type DesktopSidebarProps = {
 
 export function DesktopSidebar({ className, linkClasses }: DesktopSidebarProps) {
   return (
-    <aside className={`sticky top-[72px] hidden h-[calc(100vh-72px)] w-52 shrink-0 border-r border-soft-luminous-gold p-4 md:block ` + className}>
+    <aside className={`sticky top-[72px] hidden h-[calc(100vh-72px)] w-52 shrink-0 border-r border-peach-cream p-4 md:block ` + className}>
       <nav className="flex flex-col gap-2">
         <NavLink to="/" end className={linkClasses}>
           Home

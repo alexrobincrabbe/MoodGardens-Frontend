@@ -5,30 +5,33 @@ import toast from "react-hot-toast";
 
 export function AuthPanel() {
   return (
-    
-      <div className="rounded-xl  p-4">
-        <div className="mb-3 flex  justify-between gap-2">
-          <SetModeButton buttonMode="login" />
-          <SetModeButton buttonMode="register" />
-        </div>
-        <RegisterLoginForm />
+    <div className="rounded-xl p-4">
+      <div className="mb-3 flex justify-center">
+        <SetModeButton className="flex-1" buttonMode="login" />
+        <SetModeButton className="flex-1" buttonMode="register" />
       </div>
+      <RegisterLoginForm />
+    </div>
   );
 }
 
 type SetModeButtonProps = {
   buttonMode: "register" | "login";
+  className: string;
 };
 
-function SetModeButton({ buttonMode }: SetModeButtonProps) {
+function SetModeButton({ buttonMode, className }: SetModeButtonProps) {
   const { mode, setMode, busy } = useAuthPanel();
   return (
     <button
       type="button"
       onClick={() => setMode(buttonMode)}
-      className={`rounded-lg px-3 py-1 text-charcoal-grey bg-peach-cream text-sm ${
-        buttonMode === mode ? "border" : ""
-      }`}
+      className={
+        className +
+        ` bg-peach-cream px-3 py-1 text-sm ${
+          buttonMode === mode ? "border" : ""
+        }`
+      }
       disabled={busy}
     >
       {buttonMode}
@@ -71,7 +74,7 @@ function RegisterLoginForm() {
         const user = newUser.data?.register?.user;
         if (!user) throw new Error("Unexpected response.");
         setMsg("Registered & signed in.");
-        toast.success(`Registered with email address ${loginDetails.email}`)
+        toast.success(`Registered with email address ${loginDetails.email}`);
         setPassword("");
         setDisplayName("");
       } else {
@@ -83,7 +86,7 @@ function RegisterLoginForm() {
 
         const user = loginUser.data?.login?.user;
         if (!user) throw new Error("Unexpected response.");
-        toast.success(`Signed in as ${loginDetails.email}`)
+        toast.success(`Signed in as ${loginDetails.email}`);
         setMsg("Signed in.");
         setPassword("");
       }
@@ -98,18 +101,21 @@ function RegisterLoginForm() {
       setMsg(detailed || "Authentication failed.");
       console.error(
         "[Auth] register/login error:",
-        JSON.stringify(network?.result ?? err, null, 2)
+        JSON.stringify(network?.result ?? err, null, 2),
       );
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col items-center mt-4 space-y-3">
+    <form
+      onSubmit={handleSubmit}
+      className="mt-4 flex flex-col items-center space-y-3"
+    >
       <div>
-        <label className="block text-sm text-center font-medium">Email</label>
+        <label className="block text-center text-sm font-medium">Email</label>
         <input
           type="email"
-          className="mt-1 w-full rounded-lg p-2 text-center"
+          className="mt-1 w-full rounded-lg bg-emerald-50 p-2 text-center"
           placeholder="you@example.com"
           autoComplete="email"
           value={email}
@@ -119,9 +125,11 @@ function RegisterLoginForm() {
       </div>
       {mode === "register" && (
         <div>
-          <label className="block text-sm font-medium text-center">Display Name</label>
+          <label className="block text-center text-sm font-medium">
+            Display Name
+          </label>
           <input
-            className="mt-1 w-full rounded-lg p-2 text-center"
+            className="mt-1 w-full rounded-lg bg-emerald-50 p-2 text-center"
             placeholder="choose a name"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
@@ -130,10 +138,12 @@ function RegisterLoginForm() {
         </div>
       )}
       <div>
-        <label className="block text-sm font-medium text-center">Password</label>
+        <label className="block text-center text-sm font-medium">
+          Password
+        </label>
         <input
           type="password"
-          className="mt-1 w-full rounded-lg p-2 text-center"
+          className="bg-emerald-50 mt-1 w-full rounded-lg p-2 text-center"
           placeholder="••••••••"
           autoComplete={
             mode === "register" ? "new-password" : "current-password"
@@ -147,15 +157,15 @@ function RegisterLoginForm() {
       <button
         type="submit"
         disabled={busy}
-        className="rounded-lg bg-peach-cream  px-4 py-2 text-charcoal-grey disabled:opacity-60"
+        className="bg-peach-cream rounded-lg px-4 py-2 disabled:opacity-60"
       >
         {busy
           ? mode === "register"
             ? "Registering…"
             : "Signing in…"
           : mode === "register"
-          ? "Create account"
-          : "Sign in"}
+            ? "Create account"
+            : "Sign in"}
       </button>
 
       {msg && <p className="text-sm text-gray-600">{msg}</p>}

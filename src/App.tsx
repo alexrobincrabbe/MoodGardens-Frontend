@@ -8,15 +8,15 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const linkClasses = ({ isActive }: { isActive: boolean }) =>
     [
-      "rounded-md px-3 py-2 text-sm transition-colors",
+      "rounded-md px-3 py-2 text-xl transition-colors",
       isActive
         ? "bg-emerald-100 text-emerald-800"
-        : "text-gray-700 hover:bg-emerald-50",
+        : "text-emeralld-800 hover:bg-emerald-50",
     ].join(" ");
 
   return (
     <AuthPanelProvider>
-      <div className="min-h-screen text-neutral-900">
+      <div className="font-poiret-one min-h-screen text-heart-blue">
         <Toaster
           position="top-right"
           toastOptions={{
@@ -26,11 +26,8 @@ export default function App() {
         />
         <TopBar setSidebarOpen={setSidebarOpen} />
         <div className="mx-auto flex">
-          <DesktopSidebar
-            className="bg-white"
-            linkClasses={linkClasses}
-          />
-          <main className="from-duck-egg via-pastel-aqua to-peach-cream w-full bg-gradient-to-b p-4">
+          <DesktopSidebar className="bg-white font-zen-loop" linkClasses={linkClasses} />
+          <main className="min-h-screen background-image: bg-[repeating-linear-gradient(to_bottom,#c7d9d3_0,#d8f1f4_50vh,#fbe9db_100vh,#c7d9d3_150vh)] w-full p-4">
             <Outlet />
           </main>
         </div>

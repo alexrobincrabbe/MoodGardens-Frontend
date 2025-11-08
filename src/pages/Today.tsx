@@ -19,14 +19,7 @@ export function Today() {
   const isTodayLogged = items.some((e) => e.dayKey === today);
 
   return (
-    <div className="mx-auto max-w-2xl p-6 space-y-6">
-      <header>
-        <h1 className="text-3xl font-bold">Today</h1>
-        <p className="text-sm text-gray-500">
-          Write about your day. We’ll grow a “day garden.”
-        </p>
-      </header>
-
+    <div className="mx-auto rounded-2xl bg-white max-w-2xl p-6 space-y-6">
       {busy && (
         <div className="rounded-md border bg-gray-50 p-3 text-sm text-gray-600">
           Checking session…
@@ -50,7 +43,7 @@ export function Today() {
       )}
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Your entries</h2>
+        <h2 className="text-3xl">Your entries</h2>
 
         {!authed && !busy && (
           <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
@@ -96,7 +89,7 @@ function GardensFeed ({items, today}:GardensFeedProps){
         {items.map((e) => {
           const isTodayEntry = e.dayKey === today;
           return (
-            <article key={e.id} className="rounded-lg border p-3">
+            <article key={e.id} className="rounded-lg p-3">
               <div className="flex items-center justify-between text-xs text-gray-500">
                 <span>{formatDayKey(e.dayKey)}</span>
               </div>

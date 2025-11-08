@@ -16,7 +16,6 @@ export function HomePageImages() {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {/* Backdrop */}
         <img
           src={backdrop}
           alt="plants backdrop"
@@ -24,8 +23,6 @@ export function HomePageImages() {
             isHovered ? "opacity-100" : "opacity-0"
           }`}
         />
-
-        {/* Animated GIF */}
         <img
           src={plantAnimation}
           alt="plant animation"
@@ -33,8 +30,6 @@ export function HomePageImages() {
             isHovered ? "opacity-100" : "opacity-0"
           }`}
         />
-
-        {/* Static SVG */}
         <img
           src={plants}
           alt="static plants"

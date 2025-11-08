@@ -14,12 +14,12 @@ export function Home() {
 
   return (
     <div className="m-auto flex w-fit flex-col items-center justify-center rounded-4xl bg-white md:p-10">
-      <h1 className="text-soft-charcoal text-center text-2xl font-semibold">
+      <h1 className="text-plant-green text-center md:hidden text-2xl font-semibold mt-4">
         Mood Gardens
       </h1>
       <br />
       <ModalProvider>
-        <OpenModalButton />
+        <OpenModalButton className="mb-4 font-sans" />
         <Modal title="Welcome to Mood Gardens">
           <AboutMoodGardensContent />
         </Modal>
