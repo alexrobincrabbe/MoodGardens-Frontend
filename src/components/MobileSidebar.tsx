@@ -1,14 +1,15 @@
 import { NavLink } from "react-router-dom";
 import { type LinkClasses } from "../types";
-import logo from "../assets/images/mg-logo.png";
 
 type MobileSidebarProps = {
+  className: string;
   linkClasses: LinkClasses;
   sidebarOpen: boolean;
   setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export function MobileSidebar({
+  className = "",
   linkClasses,
   sidebarOpen,
   setSidebarOpen,
@@ -24,12 +25,11 @@ export function MobileSidebar({
 
       {/* Drawer */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 transform border-r bg-white p-4 shadow-lg transition-transform duration-200 ease-out md:hidden ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`${className} font-zen-loop fixed inset-y-0 left-0 z-50 w-48 transform border-r bg-white p-4 shadow-lg transition-transform duration-200 ease-out  ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div className="mb-4 flex items-center justify-between">
-          <span className="flex items-center gap-2 font-bold text-emerald-800">
-            <img src={logo} className="h-16" />
-            <span>Mood Gardens</span>
+          <span className="flex items-center gap-2">
+            <span className="text-3xl">Mood Gardens</span>
           </span>
           <button
             type="button"

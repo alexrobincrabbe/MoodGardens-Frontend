@@ -15,7 +15,7 @@ export function ShareMenu({ url, text }: { url: string; text: string }) {
     <div className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50"
+        className="rounded-md border px-3 py-1.5 text-sm hover:bg-emerald-100"
         aria-haspopup="menu"
         aria-expanded={open}
       >
@@ -82,7 +82,7 @@ function ShareMenuButton({ children, onClick }: ShareMenuButtonProps) {
     <button
       type="button"
       role="menuitem"
-      className="block w-full px-3 py-2 text-left text-sm hover:bg-gray-50"
+      className="block w-full px-3 py-2 text-left text-sm hover:bg-emerald-100"
       onClick={onClick}
     >
       {children}

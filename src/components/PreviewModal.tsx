@@ -13,6 +13,7 @@ import {
   gardenDownloadUrl,
   gardenShareUrl,
   downloadImage,
+  formatDayKey
 } from "../utils";
 import type { SelectedGarden } from "../types";
 
@@ -136,7 +137,7 @@ export function PreviewModal({
         <div className="flex items-center justify-between border-b px-4 py-3 shrink-0">
           <div className="min-w-0">
             <h3 className="truncate text-base font-semibold">
-              Garden — {selected.dayKey}
+              Mood Garden — {formatDayKey(selected.dayKey)}
             </h3>
             {selected.summary && (
               <p className="truncate text-xs text-gray-600">
@@ -196,7 +197,7 @@ export function PreviewModal({
 
             {/* Diary entry */}
             <div className="flex min-h-[200px] flex-col">
-              <h4 className="mb-2 text-sm font-semibold text-gray-700">
+              <h4 className="mb-2 text-lg">
                 Diary entry
               </h4>
 

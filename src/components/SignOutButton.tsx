@@ -2,6 +2,7 @@ import {  useMutation } from "@apollo/client";
 import { Logout, User } from "../graphql/auth";
 import { useAuthPanel } from "../contexts";
 import { toast } from "react-hot-toast";
+import { GenericButton } from "./GenericButton";
 
 export function SignOutButton() {
   const { user, busy, client } = useAuthPanel();
@@ -22,12 +23,12 @@ export function SignOutButton() {
   if (busy || !user) return null;
 
   return (
-      <button
+      <GenericButton
         onClick={handleLogoutClick}
         disabled={logoutLoading}
-        className="m-1 w-30 rounded-lg px-3 py-1 text-sm bg-peach-cream hover:bg-emerald-50 disabled:opacity-60"
+        className="w-30"
       >
         {logoutLoading ? "Signing out…" : "Sign out"}
-      </button>
+      </GenericButton>
   );
 }

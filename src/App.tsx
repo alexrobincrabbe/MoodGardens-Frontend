@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { TopBar, DesktopSidebar, MobileSidebar } from "./components";
+import { TopBar, MobileSidebar } from "./components";
 import { AuthPanelProvider } from "./contexts";
+import { ScrollToHash } from "./components";
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -16,7 +17,7 @@ export default function App() {
 
   return (
     <AuthPanelProvider>
-      <div className="font-poiret-one min-h-screen text-heart-blue">
+      <div className="font-poiret-one text-heart-blue min-h-screen">
         <Toaster
           position="top-right"
           toastOptions={{
@@ -24,14 +25,15 @@ export default function App() {
             style: { fontSize: "0.9rem" },
           }}
         />
-        <TopBar setSidebarOpen={setSidebarOpen} />
+        <ScrollToHash />
+        <TopBar linkClasses={linkClasses} setSidebarOpen={setSidebarOpen} />
         <div className="mx-auto flex">
-          <DesktopSidebar className="bg-white font-zen-loop" linkClasses={linkClasses} />
-          <main className="min-h-screen background-image: bg-[repeating-linear-gradient(to_bottom,#c7d9d3_0,#d8f1f4_50vh,#fbe9db_100vh,#c7d9d3_150vh)] w-full p-4">
+          <main className="background-image: min-h-screen w-full bg-[repeating-linear-gradient(to_bottom,#c7d9d3_0,#d8f1f4_50vh,#fbe9db_100vh,#c7d9d3_150vh)] p-4">
             <Outlet />
           </main>
         </div>
         <MobileSidebar
+          className="lg:hidden"
           linkClasses={linkClasses}
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}

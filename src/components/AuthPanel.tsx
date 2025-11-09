@@ -108,6 +108,7 @@ function RegisterLoginForm() {
 
   return (
     <form
+      id="login"
       onSubmit={handleSubmit}
       className="mt-4 flex flex-col items-center space-y-3"
     >
@@ -143,7 +144,7 @@ function RegisterLoginForm() {
         </label>
         <input
           type="password"
-          className="bg-emerald-50 mt-1 w-full rounded-lg p-2 text-center"
+          className="mt-1 w-full rounded-lg bg-emerald-50 p-2 text-center"
           placeholder="••••••••"
           autoComplete={
             mode === "register" ? "new-password" : "current-password"
