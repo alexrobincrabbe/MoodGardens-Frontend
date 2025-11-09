@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { shareNative, shareFacebook, shareX, copyLink } from "../utils";
 import toast from "react-hot-toast";
+import { GenericButton } from "./GenericButton";
 
 export function ShareMenu({ url, text }: { url: string; text: string }) {
       const handleCopy = async () => {
@@ -13,14 +14,13 @@ export function ShareMenu({ url, text }: { url: string; text: string }) {
 
   return (
     <div className="relative">
-      <button
+      <GenericButton
         onClick={() => setOpen((o) => !o)}
-        className="rounded-md border px-3 py-1.5 text-sm hover:bg-emerald-100"
         aria-haspopup="menu"
         aria-expanded={open}
       >
         Share ▾
-      </button>
+      </GenericButton>
 
       {open && (
         <div

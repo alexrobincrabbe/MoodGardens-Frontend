@@ -1,4 +1,6 @@
-// apps/web/src/utils/download.ts
+import { toast } from "react-hot-toast";
+
+
 export const downloadImage = async (url: string, filename: string) => {
   try {
     const res = await fetch(url);
@@ -14,4 +16,5 @@ export const downloadImage = async (url: string, filename: string) => {
   } catch (e) {
     console.error("Download failed:", e);
   }
+  toast.success("Image Downloaded")
 };

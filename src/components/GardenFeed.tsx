@@ -1,6 +1,6 @@
 import { AdvancedImage } from "@cloudinary/react";
 import { lazyload, responsive, placeholder } from "@cloudinary/react";
-import { ShareMenu } from "../components";
+import { ShareMenu, GenericButton } from "../components";
 import {
   gardenThumb,
   gardenDownloadUrl,
@@ -64,8 +64,7 @@ export function GardenFeedItem({ garden, day }: props) {
           />
 
           <div className="mt-2 flex flex-wrap gap-2">
-            <button
-              className="rounded border px-3 py-1 text-sm"
+            <GenericButton
               onClick={() =>
                 downloadImage(
                   gardenDownloadUrl(
@@ -77,7 +76,7 @@ export function GardenFeedItem({ garden, day }: props) {
               }
             >
               Download
-            </button>
+            </GenericButton>
             <ShareMenu
               url={garden.shareUrl ?? gardenShareUrl(garden.publicId)}
               text={`My Mood Garden for ${day} 🌱 #MoodGardens`}

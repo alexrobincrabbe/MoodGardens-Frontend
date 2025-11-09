@@ -2,6 +2,7 @@ import { useState } from "react";
 import { User } from "../graphql/auth";
 import { useAuthPanel } from "../contexts";
 import toast from "react-hot-toast";
+import { GenericButton } from "./GenericButton";
 
 export function AuthPanel() {
   return (
@@ -28,8 +29,8 @@ function SetModeButton({ buttonMode, className }: SetModeButtonProps) {
       onClick={() => setMode(buttonMode)}
       className={
         className +
-        ` bg-peach-cream px-3 py-1 text-sm ${
-          buttonMode === mode ? "border" : ""
+        ` px-3 py-1 ${
+          buttonMode === mode ? "border-2 border-peach-cream bg-coral text-white" : "bg-peach-cream "
         }`
       }
       disabled={busy}
@@ -113,7 +114,7 @@ function RegisterLoginForm() {
       className="mt-4 flex flex-col items-center space-y-3"
     >
       <div>
-        <label className="block text-center text-sm font-medium">Email</label>
+        <label className="block text-center">Email</label>
         <input
           type="email"
           className="mt-1 w-full rounded-lg bg-emerald-50 p-2 text-center"
@@ -126,7 +127,7 @@ function RegisterLoginForm() {
       </div>
       {mode === "register" && (
         <div>
-          <label className="block text-center text-sm font-medium">
+          <label className="block text-center">
             Display Name
           </label>
           <input
@@ -139,7 +140,7 @@ function RegisterLoginForm() {
         </div>
       )}
       <div>
-        <label className="block text-center text-sm font-medium">
+        <label className="block text-center">
           Password
         </label>
         <input
@@ -155,7 +156,7 @@ function RegisterLoginForm() {
         />
       </div>
 
-      <button
+      <GenericButton
         type="submit"
         disabled={busy}
         className="bg-peach-cream rounded-lg px-4 py-2 disabled:opacity-60"
@@ -167,7 +168,7 @@ function RegisterLoginForm() {
           : mode === "register"
             ? "Create account"
             : "Sign in"}
-      </button>
+      </GenericButton>
 
       {msg && <p className="text-sm text-gray-600">{msg}</p>}
     </form>

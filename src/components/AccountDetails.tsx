@@ -3,7 +3,7 @@ import { User, UpdateDisplayName } from "../graphql/auth";
 import { useMutation } from "@apollo/client";
 import { useAuthData } from "../hooks";
 import toast from "react-hot-toast";
-import {GenericButton} from "../components"
+import { GenericButton } from "../components";
 
 export function AccountDetails() {
   const { user, authReady } = useAuthData();
@@ -23,13 +23,13 @@ export function AccountDetails() {
       variables: { displayName: displayName },
       refetchQueries: [{ query: User }],
     });
-    toast.success("Display name updated!")
+    toast.success("Display name updated!");
   }
   const busy = !authReady && displayNameUpdating;
 
-   if (!authReady) {
+  if (!authReady) {
     return (
-      <div className="rounded-xl bg-peach-cream p-4 text-sm text-gray-500">
+      <div className="bg-peach-cream rounded-xl p-4 text-sm text-gray-500">
         Checking your account…
       </div>
     );
@@ -44,23 +44,24 @@ export function AccountDetails() {
   }
 
   return (
-    <div className="rounded-xl flex justify-center p-4">
-      <div className="flex flex-col w-50 items-center justify-center">
+    <div className="flex justify-center rounded-xl p-4">
+      <div className="flex w-50 flex-col items-center justify-center">
         <div>{user.di}</div>
-        <label className="block m-2 w-full text-center text-lg">Change Display Name</label>
+        <label className="m-2 block w-full text-center text-lg">
+          Change Display Name
+        </label>
         <input
-          className="m-2 pb-1 w-full rounded-lg font-bold text-center bg-peach-cream p-0 text-2xl text-emerald-500"
+          className="bg-peach-cream m-2 w-full rounded-lg p-0 pb-1 text-center text-2xl font-bold text-emerald-500"
           placeholder="choose a name"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           disabled={busy}
         />
-        <GenericButton
-          onClick={submitDisplayName}
-          className="m-2"
-        >
-          {displayNameUpdating ? "Updating..." : "Update"}
-        </GenericButton>
+        <span className="m-2">
+          <GenericButton onClick={submitDisplayName} className="">
+            {displayNameUpdating ? "Updating..." : "Update"}
+          </GenericButton>
+        </span>
       </div>
     </div>
   );

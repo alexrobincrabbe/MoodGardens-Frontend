@@ -4,6 +4,7 @@ import { entrySchema, type EntryForm } from "../validation";
 import { useTodayEntrySubmit } from "../hooks";
 import { isoDayKey } from "../utils";
 import { useAuthPanel } from "../contexts";
+import { GenericButton } from "./GenericButton";
 
 type TodayEntryFormProps = {
   refetchFeed: () => Promise<any>;
@@ -37,13 +38,12 @@ export function TodayEntryForm({ refetchFeed }: TodayEntryFormProps) {
         )}
       </div>
 
-      <button
+      <GenericButton
         type="submit"
         disabled={isSubmitting}
-        className="w-fit rounded-lg bg-peach-cream px-4 py-2 hover:bg-emerald-400 font-extrabold disabled:opacity-60"
       >
         {isSubmitting ? "Generating…" : "Generate Garden"}
-      </button>
+      </GenericButton>
 
       {statusText && <p className="mt-2 text-sm text-gray-600">{statusText}</p>}
     </form>

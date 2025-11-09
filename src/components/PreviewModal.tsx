@@ -7,7 +7,7 @@ import {
   lazyload,
   placeholder,
 } from "@cloudinary/react";
-import { ShareMenu } from "../components";
+import { GenericButton, ShareMenu } from "../components";
 import {
   gardenLarge,
   gardenDownloadUrl,
@@ -226,7 +226,7 @@ export function PreviewModal({
         <div className="flex shrink-0 items-center justify-between border-t bg-white px-4 py-3">
           <div className="flex items-center gap-2">
             {/* Download */}
-            <button
+            <GenericButton
               onClick={() =>
                 downloadImage(
                   gardenDownloadUrl(
@@ -239,7 +239,7 @@ export function PreviewModal({
               className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50"
             >
               Download
-            </button>
+            </GenericButton>
 
             {/* Share menu */}
             <ShareMenu

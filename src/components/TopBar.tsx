@@ -41,7 +41,7 @@ export function TopBar({ setSidebarOpen, linkClasses }: TopBarProps) {
             Gardens
           </NavLink>
         </nav>
-        <div className="flex items-center gap-3">
+        <div className="flex justify-center items-center gap-3">
           {!authReady && <p className="text-sm text-gray-600">Signing in...</p>}
           {user && authReady && (
             <div className="flex-col items-center">

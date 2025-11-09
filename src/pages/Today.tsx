@@ -1,5 +1,11 @@
-import { GardenFeedItem, TodayEntryForm, LoadMoreTrigger, TodayGardenPreview  } from "../components";
-import {useEntriesFeed} from "../hooks";
+import { useState, useCallback } from "react";
+import {
+  GardenFeedItem,
+  TodayEntryForm,
+  LoadMoreTrigger,
+  TodayGardenPreview,
+} from "../components";
+import { useEntriesFeed } from "../hooks";
 import { isoDayKey, formatDayKey } from "../utils";
 import type { Garden } from "../types";
 import { useAuthPanel } from "../contexts";
@@ -15,8 +21,28 @@ export function Today() {
     refetchFeed,
     initialError,
     initialLoading,
-  } = useEntriesFeed({ authed:authed && !busy });
-  const isTodayLogged = items.some((e) => e.dayKey === today);
+  } = useEntriesFeed({ authed: authed && !busy });
+
+  const todaysItem = items.find((e) => e.dayKey === today);
+  const isTodayLogged = !!todaysItem;
+
+  const todayGardenStatus = todaysItem?.garden?.status;
+  const isTodayGardenFinished =
+    todayGardenStatus === "READY" || todayGardenStatus === "FAILED";
+
+  // 👇 local flag that gets set when TodayGardenPreview sees READY
+  const [todayGardenFinishedLocally, setTodayGardenFinishedLocally] =
+    useState(false);
+
+  const handleTodayGardenReady = useCallback(() => {
+    setTodayGardenFinishedLocally(true);
+  }, []);
+
+  const shouldShowAlreadyLoggedBanner =
+    authed &&
+    !busy &&
+    isTodayLogged &&
+    (isTodayGardenFinished || todayGardenFinishedLocally);
 
   return (
     <div className="mx-auto rounded-2xl bg-white max-w-2xl p-6 space-y-6">
@@ -36,8 +62,8 @@ export function Today() {
         <TodayEntryForm refetchFeed={refetchFeed} />
       )}
 
-      {authed && isTodayLogged && (
-        <div className="rounded-lg border bg-gray-50 p-3 text-sm text-gray-700">
+      {shouldShowAlreadyLoggedBanner && (
+        <div className="rounded-lg bg-gray-50 p-3 text-2xl text-center text-gray-700">
           You’ve already logged an entry for today
         </div>
       )}
@@ -58,7 +84,11 @@ export function Today() {
           <p className="text-sm text-gray-500">No entries yet.</p>
         )}
 
-        <GardensFeed items={items} today={today} />
+        <GardensFeed
+          items={items}
+          today={today}
+          onTodayGardenReady={handleTodayGardenReady}
+        />
         {hasMore && (
           <LoadMoreTrigger
             onVisible={loadMore}
@@ -79,31 +109,35 @@ type FeedItem = {
 };
 
 type GardensFeedProps = {
-    items: FeedItem[],
-    today: string,
-}
+  items: FeedItem[];
+  today: string;
+  onTodayGardenReady: () => void;
+};
 
-function GardensFeed ({items, today}:GardensFeedProps){
-    return(
-        <>
-        {items.map((e) => {
-          const isTodayEntry = e.dayKey === today;
-          return (
-            <article key={e.id} className="rounded-lg p-3">
-              <div className="flex items-center justify-between text-xs text-gray-500">
-                <span>{formatDayKey(e.dayKey)}</span>
+function GardensFeed({ items, today, onTodayGardenReady }: GardensFeedProps) {
+  return (
+    <>
+      {items.map((e) => {
+        const isTodayEntry = e.dayKey === today;
+        return (
+          <article key={e.id} className="rounded-lg p-3">
+            <div className="flex items-center justify-between text-xs text-gray-500">
+              <span>{formatDayKey(e.dayKey)}</span>
+            </div>
+            <p className="mt-1 text-sm">{e.text}</p>
+            {isTodayEntry ? (
+              <div className="mt-2">
+                <TodayGardenPreview
+                  periodKey={today}
+                  onGardenReady={onTodayGardenReady}
+                />
               </div>
-              <p className="mt-1 text-sm">{e.text}</p>
-              {isTodayEntry ? (
-                <div className="mt-2">
-                  <TodayGardenPreview periodKey={today} />
-                </div>
-              ) : (
-                <GardenFeedItem garden={e.garden} day={e.dayKey} />
-              )}
-            </article>
-          );
-        })}
-        </>
-    )
+            ) : (
+              <GardenFeedItem garden={e.garden} day={e.dayKey} />
+            )}
+          </article>
+        );
+      })}
+    </>
+  );
 }

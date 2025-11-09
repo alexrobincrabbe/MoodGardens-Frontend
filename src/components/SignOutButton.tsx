@@ -1,7 +1,6 @@
-import {  useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import { Logout, User } from "../graphql/auth";
 import { useAuthPanel } from "../contexts";
-import { toast } from "react-hot-toast";
 import { GenericButton } from "./GenericButton";
 
 export function SignOutButton() {
@@ -14,7 +13,6 @@ export function SignOutButton() {
       await client.resetStore();
       client.writeQuery({ query: User, data: { user: null } });
       await client.clearStore();
-      toast.success("Signed out!");
     } catch (err) {
       console.error("[Auth] logout error:", err);
     }
@@ -23,12 +21,14 @@ export function SignOutButton() {
   if (busy || !user) return null;
 
   return (
+    <span className="flex justify-center">
       <GenericButton
         onClick={handleLogoutClick}
         disabled={logoutLoading}
-        className="w-30"
+        className=""
       >
         {logoutLoading ? "Signing out…" : "Sign out"}
       </GenericButton>
+    </span>
   );
 }
