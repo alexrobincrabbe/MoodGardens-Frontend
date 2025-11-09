@@ -9,6 +9,7 @@ import {
   HomePageImages,
 } from "../components";
 
+
 export function Home() {
   const { user, authReady } = useAuthData();
  
@@ -19,7 +20,7 @@ export function Home() {
       </h1>
       <br />
       <ModalProvider>
-        <OpenModalButton className="mb-4 font-sans" />
+        <OpenModalButton className="transition-transform duration-300 hover:scale-110 mb-4 font-sans" />
         <Modal title="Welcome to Mood Gardens">
           <AboutMoodGardensContent />
         </Modal>

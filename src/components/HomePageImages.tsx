@@ -6,6 +6,7 @@ import heart from "../assets/images/icon_heart.svg";
 import backdrop from "../assets/images/peach_pill_with_plants_backdrop.png";
 import plantAnimation from "../assets/images/peach_pill_with_plants.gif";
 
+
 export function HomePageImages() {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -40,10 +41,12 @@ export function HomePageImages() {
       </div>
 
       <div className="flex items-center justify-center">
-        <img src={happy} alt="" className="w-[75px] md:w-[130px]" />
-        <img src={heart} alt="" className="w-[75px] md:w-[130px]" />
-        <img src={sad} alt="" className="w-[75px] md:w-[130px]" />
+         <img className="w-[75px] md:w-[130px] transition-transform duration-300 hover:scale-110" src={happy} alt="happyface"/>
+        <img src={heart} alt="" className="w-[75px] md:w-[130px] transition-transform duration-300 hover:scale-110" />
+        <img src={sad} alt="" className="w-[75px] md:w-[130px] transition-transform duration-300 hover:scale-110" />
       </div>
     </>
   );
 }
+
+
