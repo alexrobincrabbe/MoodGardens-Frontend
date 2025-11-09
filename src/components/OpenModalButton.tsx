@@ -1,17 +1,19 @@
-import { useModal } from "../contexts"
+import { useModal } from "../contexts";
 
 type OpenModalButtonProps = {
-    className: string
-}
+  className: string;
+};
 
-export function OpenModalButton ({className}:OpenModalButtonProps){
-    const {setIsModalOpen} = useModal()
-    return(
-        <button
+export function OpenModalButton({ className }: OpenModalButtonProps) {
+  const { setIsModalOpen } = useModal();
+  return (
+    <span className={className}>
+      <button
         onClick={() => setIsModalOpen(true)}
-        className={ `${className} flex items-center justify-center text-plant-green bg-emerald-50 font-bold text-6xl border-4 text-charcoal-black hover:bg-emerald-100 h-20 w-20 rounded-full px-4 py-2`}
+        className="bg-peach-cream text-charcoal-black hover:bg-beige-cream flex h-20 w-20 items-center justify-center rounded-full border-4 px-4 py-2 text-6xl font-bold hover:border-5"
       >
         ?
       </button>
-    )
+    </span>
+  );
 }

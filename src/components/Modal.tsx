@@ -43,7 +43,7 @@ export function Modal({ title, children }: ModalProps) {
           ✕
         </button>
         {title && (
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">{title}</h2>
+          <h2 className="text-center mb-4 text-2xl">{title}</h2>
         )}
 
         {children}

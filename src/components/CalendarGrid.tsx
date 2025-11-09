@@ -46,8 +46,8 @@ export function CalendarGrid({
             className="relative flex flex-col gap-1 rounded border border-gray-200 bg-white sm:gap-2"
             key={key}
           >
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-2 text-xs md:text-xl text-white">{day}</div>
-            <div className="relative aspect-square w-full overflow-hidden rounded bg-gray-50">
+            <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-2 text-xs md:text-xl text-white">{day}</div>
+            <div className="relative aspect-square w-full overflow-visible rounded bg-gray-50">
               {g?.publicId ? (
                 <button
                   type="button"
@@ -59,7 +59,7 @@ export function CalendarGrid({
                       shareUrl: (g as any)?.shareUrl ?? null,
                     });
                   }}
-                  className="absolute inset-0"
+                  className="absolute inset-0 transition-transform duration-300 hover:scale-110"
                   aria-label={`Open garden preview for ${key}`}
                   title="Open preview"
                 >
