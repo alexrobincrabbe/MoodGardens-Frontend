@@ -51,7 +51,7 @@ export function AccountDetails() {
           Change Display Name
         </label>
         <input
-          className="bg-peach-cream m-2 w-full rounded-lg p-0 pb-1 text-center text-2xl font-bold text-emerald-500"
+          className="bg-peach-cream m-2 w-full rounded-lg p-0 pb-1 text-center text-2xl font-extrabold"
           placeholder="choose a name"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}

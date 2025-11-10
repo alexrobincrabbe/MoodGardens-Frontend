@@ -10,7 +10,7 @@ export function OpenModalButton({ className }: OpenModalButtonProps) {
     <span className={className}>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="bg-peach-cream text-charcoal-black hover:bg-beige-cream border-coral flex h-20 w-20 items-center justify-center rounded-full border-4 px-4 py-2 text-6xl font-bold hover:border-5"
+        className="bg-peach-cream hover:bg-beige-cream border-coral flex h-20 w-20 items-center justify-center rounded-full border-4 px-4 py-2 text-6xl font-bold hover:border-5"
       >
         ?
       </button>
