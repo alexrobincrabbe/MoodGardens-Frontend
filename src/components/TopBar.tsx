@@ -26,7 +26,7 @@ export function TopBar({ setSidebarOpen, linkClasses }: TopBarProps) {
           </button>
           <span className="text-plant-green hidden items-center gap-2 lg:flex">
             <span className="font-zen-loop w-full text-center text-5xl text-shadow-black">
-              mood gardens
+              Mood Gardens
             </span>
           </span>
         </div>

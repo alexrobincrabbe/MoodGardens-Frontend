@@ -20,7 +20,7 @@ export function GenericButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`${className} bg-peach-cream hover:bg-beige-cream rounded-lg border-2 p-1 px-2 font-extrabold hover:m-[-1px] hover:border-3 disabled:opacity-60`}
+      className={`${className} bg-peach-cream hover:bg-beige-cream border-coral rounded-lg border-2 p-1 px-2 font-extrabold hover:m-[-1px] hover:border-3 disabled:opacity-60`}
     >
       {children}
     </button>
