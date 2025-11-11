@@ -1,7 +1,7 @@
 // src/hooks/useLogout.ts
 import { useCallback } from "react";
 import { useApolloClient, useMutation } from "@apollo/client";
-import { Logout, User } from "../graphql/auth";
+import { Logout, User } from "../../graphql/auth";
 
 export function useLogout() {
   const client = useApolloClient();

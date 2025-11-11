@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useState } from "react";
-import { useModal } from "../contexts";
+import { useModal } from "../../contexts";
 
 type ModalProps = {
   title?: string;

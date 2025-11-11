@@ -1,16 +1,16 @@
 import { useMemo } from "react";
-import type { Garden } from "../types";
+import type { Garden } from "../../types";
 
 
 type userMakePreviewGalleryProps = {
     data?: {
-        myGardensByMonth?: Garden[];
+        gardensByMonth?: Garden[];
     };
 };
 
 export function useMakePreviewGallery({ data }: userMakePreviewGalleryProps) {
     const gallery = useMemo(() => {
-        const list = data?.myGardensByMonth ?? [];
+        const list = data?.gardensByMonth ?? [];
         return list
             .filter((g: any) => !!g.publicId)
             .sort((a: any, b: any) =>

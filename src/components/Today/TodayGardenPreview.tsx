@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@apollo/client";
-import { GetGarden, User } from "../graphql";
-import { GardenFeedItem } from "../components";
+import { GetGarden, User } from "../../graphql";
+import { GardenFeedItem } from "..";
 import { toast } from "react-hot-toast";
 
 type PreviewProps = {

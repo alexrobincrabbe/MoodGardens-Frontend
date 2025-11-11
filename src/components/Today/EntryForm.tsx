@@ -1,10 +1,10 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { entrySchema, type EntryForm } from "../validation";
-import { useTodayEntrySubmit } from "../hooks";
-import { isoDayKey } from "../utils";
-import { useAuthPanel } from "../contexts";
-import { GenericButton } from "./GenericButton";
+import { entrySchema, type EntryForm } from "../../validation";
+import { useTodayEntrySubmit } from "../../hooks";
+import { isoDayKey } from "../../utils";
+import { useAuthPanel } from "../../contexts";
+import { GenericButton } from "../Common/GenericButton";
 
 type TodayEntryFormProps = {
   refetchFeed: () => Promise<any>;

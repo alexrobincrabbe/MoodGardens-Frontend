@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { User, UpdateDisplayName } from "../graphql/auth";
+import { User, UpdateDisplayName } from "../../graphql/auth";
 import { useMutation } from "@apollo/client";
-import { useAuthData } from "../hooks";
+import { useAuthData } from "../../hooks";
 import toast from "react-hot-toast";
-import { GenericButton } from "../components";
+import { GenericButton } from "../../components";
 
 export function AccountDetails() {
   const { user, authReady } = useAuthData();

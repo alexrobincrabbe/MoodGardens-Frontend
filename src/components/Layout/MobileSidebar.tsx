@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { type LinkClasses } from "../types";
+import { type LinkClasses } from "../../types";
 
 type MobileSidebarProps = {
   className: string;

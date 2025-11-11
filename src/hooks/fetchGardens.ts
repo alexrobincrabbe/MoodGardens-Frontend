@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useQuery } from "@apollo/client";
-import { MyGardensByMonth } from "../graphql";
+import { GardensByMonth } from "../graphql";
 import { periodKeyFor } from "../utils";
 
 type useFetchGardensProps = {
@@ -14,7 +14,7 @@ export function useFetchGardens({ skip, year, monthIndex }: useFetchGardensProps
         () => periodKeyFor("MONTH", new Date(Date.UTC(year, monthIndex, 1))),
         [year, monthIndex]
     );
-    const { data, loading, error } = useQuery(MyGardensByMonth, {
+    const { data, loading, error } = useQuery(GardensByMonth, {
         variables: { monthKey },
         skip,
         fetchPolicy: "cache-and-network",

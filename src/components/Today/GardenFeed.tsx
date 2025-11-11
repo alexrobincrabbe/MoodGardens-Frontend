@@ -1,12 +1,12 @@
 import { AdvancedImage } from "@cloudinary/react";
 import { lazyload, responsive, placeholder } from "@cloudinary/react";
-import { ShareMenu, GenericButton } from "../components";
+import { ShareMenu, GenericButton } from "../../components";
 import {
   gardenThumb,
   gardenDownloadUrl,
   gardenShareUrl,
   downloadImage,
-} from "../utils";
+} from "../../utils";
 
 type Garden = {
   status: "PENDING" | "READY" | "FAILED";

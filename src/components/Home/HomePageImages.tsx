@@ -1,10 +1,10 @@
 import { useState } from "react";
-import plants from "../assets/images/peach_pill_with_plants.svg";
-import happy from "../assets/images/icon_happy.svg";
-import sad from "../assets/images/icon_sad.svg";
-import heart from "../assets/images/icon_heart.svg";
-import backdrop from "../assets/images/peach_pill_with_plants_backdrop.png";
-import plantAnimation from "../assets/images/peach_pill_with_plants.gif";
+import plants from "../../assets/images/peach_pill_with_plants.svg";
+import happy from "../../assets/images/icon_happy.svg";
+import sad from "../../assets/images/icon_sad.svg";
+import heart from "../../assets/images/icon_heart.svg";
+import backdrop from "../../assets/images/peach_pill_with_plants_backdrop.png";
+import plantAnimation from "../../assets/images/peach_pill_with_plants.gif";
 
 
 export function HomePageImages() {

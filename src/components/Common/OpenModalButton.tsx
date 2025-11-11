@@ -1,4 +1,4 @@
-import { useModal } from "../contexts";
+import { useModal } from "../../contexts";
 
 type OpenModalButtonProps = {
   className: string;

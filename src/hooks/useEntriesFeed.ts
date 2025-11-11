@@ -1,74 +1,6 @@
 import { useCallback, useState, useEffect } from "react";
-import { useMutation, useQuery } from "@apollo/client";
-import { UpsertEntry, RequestGarden, MyEntries, EntryByDay} from "../graphql";
-import type { EntryForm } from "../validation";
-
-export function useTodayData(skip: boolean, today: string) {
-  const {
-    data: todayData,
-    loading: todayLoading,
-    refetch: refetchToday,
-  } = useQuery(EntryByDay, {
-    variables: { dayKey: today }, 
-    fetchPolicy: "cache-and-network",
-    skip,
-  });
-
-
-  return { todayData, todayLoading, refetchToday };
-}
-
-
-type UseTodayEntrySubmitArgs = {
-    today: string;
-    resetForm: () => void;
-    refetchFeed: () => Promise<any>;
-};
-
-export function useTodayEntrySubmit({
-    today,
-    resetForm,
-    refetchFeed,
-}: UseTodayEntrySubmitArgs) {
-    const [statusText, setStatusText] = useState<string>("");
-
-    const [upsertEntry] = useMutation(UpsertEntry);
-    const [requestGarden] = useMutation(RequestGarden);
-
-    const onSubmit = useCallback(
-        async (vals: EntryForm) => {
-            setStatusText("");
-            try {
-                await upsertEntry({
-                    variables: { text: vals.text, songUrl: vals.songUrl, dayKey: today },
-                });
-
-                const res = await requestGarden({
-                    variables: { period: "DAY", periodKey: today },
-                });
-
-                const newId = res.data?.requestGarden?.id ?? null;
-                if (!newId) {
-                    setStatusText("Could not start garden job (no id returned).");
-                    return;
-                }
-
-                setStatusText("Generating your mood garden…");
-
-                resetForm();
-                await refetchFeed();
-            } catch (err) {
-                console.error("[Today] submit failed:", err);
-                setStatusText(
-                    "Something went wrong while saving or starting the garden."
-                );
-            }
-        },
-        [today, upsertEntry, requestGarden, resetForm, refetchFeed]
-    );
-
-    return { onSubmit, statusText };
-}
+import { useQuery } from "@apollo/client";
+import { PaginatedDiaryEntries} from "../graphql";
 
 export function useEntriesFeed(opts?: { authed?: boolean }) {
   const LIMIT = 10;
@@ -86,7 +18,7 @@ export function useEntriesFeed(opts?: { authed?: boolean }) {
     error: initialErrorRaw,
     fetchMore,
     refetch,
-  } = useQuery(MyEntries, {
+  } = useQuery(PaginatedDiaryEntries, {
     variables: { limit: LIMIT, offset: 0 },
     notifyOnNetworkStatusChange: true,
     skip,
@@ -118,13 +50,13 @@ export function useEntriesFeed(opts?: { authed?: boolean }) {
   // Seed from first page ONCE (not when skipped)
   useEffect(() => {
     if (skip) return;
-    if (!initialLoadingRaw && data?.myEntries && totalFetched === 0) {
-      const firstPage: any[] = data.myEntries;
+    if (!initialLoadingRaw && data?.paginatedDiaryEntries && totalFetched === 0) {
+      const firstPage: any[] = data.paginatedDiaryEntries;
       setTotalFetched(firstPage.length);
       setItems(dedupeById(firstPage));
       setHasMore(firstPage.length === LIMIT);
     }
-  }, [skip, initialLoadingRaw, data?.myEntries, totalFetched, dedupeById]);
+  }, [skip, initialLoadingRaw, data?.paginatedDiaryEntries, totalFetched, dedupeById]);
 
   const loadMore = useCallback(async () => {
     if (skip) return;
@@ -134,7 +66,7 @@ export function useEntriesFeed(opts?: { authed?: boolean }) {
       const res = await fetchMore({
         variables: { limit: LIMIT, offset: totalFetched },
       });
-      const nextPage: any[] = res.data?.myEntries ?? [];
+      const nextPage: any[] = res.data?.paginatedDiaryEntries ?? [];
       setTotalFetched((n) => n + nextPage.length);
       setItems((prev) => dedupeById([...prev, ...nextPage]));
       setHasMore(nextPage.length === LIMIT);
@@ -154,7 +86,7 @@ export function useEntriesFeed(opts?: { authed?: boolean }) {
   const refetchFeed = useCallback(async () => {
     if (skip) return;
     const res = await refetch({ limit: LIMIT, offset: 0 });
-    const firstPage: any[] = res.data?.myEntries ?? [];
+    const firstPage: any[] = res.data?.paginatedDiaryEntries ?? [];
     setTotalFetched(firstPage.length);
     setItems(dedupeById(firstPage));
     setHasMore(firstPage.length === LIMIT);

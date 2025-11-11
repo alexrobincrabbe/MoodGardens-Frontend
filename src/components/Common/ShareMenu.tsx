@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { shareNative, shareFacebook, shareX, copyLink } from "../utils";
+import { shareNative, shareFacebook, shareX, copyLink } from "../../utils";
 import toast from "react-hot-toast";
 import { GenericButton } from "./GenericButton";
 

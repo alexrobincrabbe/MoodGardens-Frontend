@@ -1,7 +1,7 @@
 import { AdvancedImage, responsive, lazyload } from "@cloudinary/react";
 import { placeholder } from "@cloudinary/react";
-import { isoDayKey, gardenThumb } from "../utils";
-import type {SelectedGarden} from "../types"
+import { isoDayKey, gardenThumb } from "../../utils";
+import type {SelectedGarden} from "../../types"
 
 type GardenCell = {
   publicId?: string | null;

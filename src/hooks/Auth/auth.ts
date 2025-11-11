@@ -1,5 +1,5 @@
 import { useQuery } from "@apollo/client";
-import { User } from "../graphql/auth";
+import { User } from "../../graphql/auth";
 
 export function useAuthData() {
   const { data: userData, loading: userLoading } = useQuery(User, {

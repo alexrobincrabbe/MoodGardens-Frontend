@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
-import { EntryByDay } from "../graphql";
+import { GetDiaryEntry } from "../../graphql";
 import { useQuery } from "@apollo/client";
 import {
   AdvancedImage,
@@ -7,15 +7,15 @@ import {
   lazyload,
   placeholder,
 } from "@cloudinary/react";
-import { GenericButton, ShareMenu } from "../components";
+import { GenericButton, ShareMenu } from "..";
 import {
   gardenLarge,
   gardenDownloadUrl,
   gardenShareUrl,
   downloadImage,
   formatDayKey
-} from "../utils";
-import type { SelectedGarden } from "../types";
+} from "../../utils";
+import type { SelectedGarden } from "../../types";
 
 type PreviewModalProps = {
   selected: SelectedGarden;
@@ -36,7 +36,7 @@ export function PreviewModal({
     data,
     loading: entryLoading,
     error: entryError,
-  } = useQuery(EntryByDay, {
+  } = useQuery(GetDiaryEntry, {
     variables: { dayKey: selected.dayKey },
     fetchPolicy: "network-only",
   });

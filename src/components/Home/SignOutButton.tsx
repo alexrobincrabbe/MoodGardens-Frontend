@@ -1,7 +1,7 @@
 import { useMutation } from "@apollo/client";
-import { Logout, User } from "../graphql/auth";
-import { useAuthPanel } from "../contexts";
-import { GenericButton } from "./GenericButton";
+import { Logout, User } from "../../graphql/auth";
+import { useAuthPanel } from "../../contexts";
+import { GenericButton } from "../Common/GenericButton";
 
 export function SignOutButton() {
   const { user, busy, client } = useAuthPanel();

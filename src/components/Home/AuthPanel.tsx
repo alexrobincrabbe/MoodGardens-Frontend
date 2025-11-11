@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { User } from "../graphql/auth";
-import { useAuthPanel } from "../contexts";
+import { User } from "../../graphql/auth";
+import { useAuthPanel } from "../../contexts";
 import toast from "react-hot-toast";
-import { GenericButton } from "./GenericButton";
+import { GenericButton } from "../Common/GenericButton";
 
 export function AuthPanel() {
   return (

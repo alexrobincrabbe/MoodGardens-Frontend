@@ -1,8 +1,8 @@
-import { useAuthData } from "../hooks";
-import { GenericButton, SignOutButton } from "../components";
+import { useAuthData } from "../../hooks";
+import { GenericButton, SignOutButton } from "../../components";
 import { Menu } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import { type LinkClasses } from "../types";
+import { type LinkClasses } from "../../types";
 
 type TopBarProps = {
   setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;

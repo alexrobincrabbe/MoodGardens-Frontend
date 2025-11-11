@@ -1,30 +1,57 @@
 import { gql } from "@apollo/client";
 
-export const UpsertEntry = gql`
-  mutation UpsertEntry($text: String!, $songUrl: String, $dayKey: String!) {
-    upsertEntry(text: $text, songUrl: $songUrl, dayKey: $dayKey) {
+export const CreateDiaryEntry = gql`
+  mutation CreateDiaryEntry($text: String!, $dayKey: String!) {
+    createDiaryEntry(text: $text, dayKey: $dayKey) {
       id
       dayKey
-      mood {
-        valence
-        arousal
-        tags
-      }
       createdAt
     }
   }
 `;
 
-export const RequestGarden = gql`
-  mutation RequestGarden($period: GardenPeriod!, $periodKey: String!) {
-    requestGarden(period: $period, periodKey: $periodKey) {
+export const GetDiaryEntry = gql`
+  query DiaryEntry($dayKey: String!) {
+    diaryEntry(dayKey: $dayKey) {
+      id
+      dayKey
+      text
+      createdAt
+    }
+  }
+`;
+
+export const PaginatedDiaryEntries = gql`
+  query PaginatedDiaryEntries($limit: Int!, $offset: Int!) {
+    paginatedDiaryEntries(limit: $limit, offset: $offset) {
+      id
+      text
+      dayKey
+      createdAt
+      garden {
+        id
+        status
+        imageUrl
+        publicId
+        shareUrl
+        progress
+        periodKey
+        updatedAt
+      }
+    }
+  }
+`;
+
+export const RequestGenerateGarden = gql`
+  mutation RequestGenerateGarden($period: GardenPeriod!, $periodKey: String!) {
+    requestGenerateGarden(period: $period, periodKey: $periodKey) {
       id
       status
       period
       periodKey
       imageUrl
       publicId
-      shareUrl    # <-- NEW
+      shareUrl
       progress
       updatedAt
     }
@@ -38,7 +65,7 @@ export const GetGarden = gql`
       status
       imageUrl
       publicId
-      shareUrl   # <-- NEW
+      shareUrl
       summary
       period
       periodKey
@@ -48,43 +75,9 @@ export const GetGarden = gql`
   }
 `;
 
-/** Entries feed for infinite scroll (newest first) */
-export const MyEntries = gql`
-  query MyEntries($limit: Int!, $offset: Int!) {
-    myEntries(limit: $limit, offset: $offset) {
-      id
-      text
-      dayKey
-      createdAt
-      garden {
-        id
-        status
-        imageUrl
-        publicId
-        shareUrl    # <-- NEW
-        progress
-        periodKey
-        updatedAt
-      }
-    }
-  }
-`;
-
-/** Check if an entry exists for a given dayKey (e.g., today's) */
-export const EntryByDay = gql`
-  query EntryByDay($dayKey: String!) {
-    entryByDay(dayKey: $dayKey) {
-      id
-      dayKey
-      text
-      createdAt
-    }
-  }
-`;
-
-export const MyGardensByMonth = gql`
-  query MyGardensByMonth($monthKey: String!) {
-    myGardensByMonth(monthKey: $monthKey) {
+export const GardensByMonth = gql`
+  query GardensByMonth($monthKey: String!) {
+    gardensByMonth(monthKey: $monthKey) {
       id
       period
       periodKey
