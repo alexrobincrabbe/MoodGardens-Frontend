@@ -30,7 +30,7 @@ function SetModeButton({ buttonMode, className }: SetModeButtonProps) {
       className={
         className +
         ` px-3 py-1 ${
-          buttonMode === mode ? "border-2 border-peach-cream bg-coral text-white" : "bg-peach-cream "
+          buttonMode === mode ? "border-2 border-slate-500 bg-coral text-white" : "bg-peach-cream "
         }`
       }
       disabled={busy}
