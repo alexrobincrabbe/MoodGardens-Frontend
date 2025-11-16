@@ -12,7 +12,7 @@ export default function App() {
       "rounded-md px-3 py-2 text-xl transition-colors",
       isActive
         ? "bg-emerald-100 text-emerald-800"
-        : "text-emeralld-800 hover:bg-emerald-50",
+        : "hover:bg-emerald-50",
     ].join(" ");
 
   return (
@@ -20,6 +20,10 @@ export default function App() {
       <div className="font-poiret-one text-heart-blue min-h-screen">
         <Toaster
           position="top-right"
+          containerStyle={{
+            top: 100, // adjust this to match your TopBar height (in px)
+            right: 16,
+          }}
           toastOptions={{
             duration: 3000,
             style: { fontSize: "0.9rem" },

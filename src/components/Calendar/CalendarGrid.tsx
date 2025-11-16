@@ -1,7 +1,9 @@
+// CalendarGrid.tsx
+import React, { memo } from "react";
 import { AdvancedImage, responsive, lazyload } from "@cloudinary/react";
 import { placeholder } from "@cloudinary/react";
 import { isoDayKey, gardenThumb } from "../../utils";
-import type {SelectedGarden} from "../../types"
+import type { SelectedGarden } from "../../types";
 
 type GardenCell = {
   publicId?: string | null;
@@ -18,7 +20,7 @@ type CalendarGridProps = {
   setSelected: React.Dispatch<React.SetStateAction<SelectedGarden | null>>;
 };
 
-export function CalendarGrid({
+export const CalendarGrid = memo(function CalendarGrid({
   cells,
   calendarViewGardens,
   selectedYear,
@@ -46,7 +48,9 @@ export function CalendarGrid({
             className="relative flex flex-col gap-1 rounded border border-gray-200 bg-white sm:gap-2"
             key={key}
           >
-            <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-2 text-xs md:text-xl text-white">{day}</div>
+            <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-2 text-xs md:text-xl text-white">
+              {day}
+            </div>
             <div className="relative aspect-square w-full overflow-visible rounded bg-gray-50">
               {g?.publicId ? (
                 <button
@@ -77,8 +81,7 @@ export function CalendarGrid({
                   />
                 </button>
               ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-[10px] text-gray-400">
-                </div>
+                <div className="absolute inset-0 flex items-center justify-center text-[10px] text-gray-400" />
               )}
             </div>
           </div>
@@ -86,4 +89,4 @@ export function CalendarGrid({
       })}
     </div>
   );
-}
+});

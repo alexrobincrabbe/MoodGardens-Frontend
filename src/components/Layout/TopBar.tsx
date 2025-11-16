@@ -40,6 +40,9 @@ export function TopBar({ setSidebarOpen, linkClasses }: TopBarProps) {
           <NavLink to="/gardens" className={linkClasses}>
             Gardens
           </NavLink>
+          <NavLink to="/account" className={linkClasses}>
+            Accont
+          </NavLink>
         </nav>
         <div className="flex justify-center items-center gap-3">
           {!authReady && <p className="text-sm text-gray-600">Signing in...</p>}

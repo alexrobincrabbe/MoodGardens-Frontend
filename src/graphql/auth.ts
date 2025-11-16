@@ -5,8 +5,13 @@ export const User = gql`
     user {
       id
       email
-      createdAt
       displayName
+      createdAt
+      timezone
+      dayRolloverHour
+      notifyWeeklyGarden
+      notifyMonthlyGarden
+      notifyYearlyGarden
     }
   }
 `;

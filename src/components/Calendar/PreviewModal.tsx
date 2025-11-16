@@ -31,7 +31,6 @@ export function PreviewModal({
   onSelect,
 }: PreviewModalProps) {
   const [imgReady, setImgReady] = useState(false);
-
   const {
     data,
     loading: entryLoading,
@@ -41,7 +40,7 @@ export function PreviewModal({
     fetchPolicy: "network-only",
   });
 
-  const entryText: string | null = data?.entryByDay?.text ?? null;
+const entryText: string | null = data?.diaryEntry?.text ?? null;
 
   useEffect(() => {
     setImgReady(false);

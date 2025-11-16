@@ -1,10 +1,9 @@
 import { gql } from "@apollo/client";
 
 export const CreateDiaryEntry = gql`
-  mutation CreateDiaryEntry($text: String!, $dayKey: String!) {
-    createDiaryEntry(text: $text, dayKey: $dayKey) {
+  mutation CreateDiaryEntry($text: String!) {
+    createDiaryEntry(text: $text) {
       id
-      dayKey
       createdAt
     }
   }
@@ -43,7 +42,7 @@ export const PaginatedDiaryEntries = gql`
 `;
 
 export const RequestGenerateGarden = gql`
-  mutation RequestGenerateGarden($period: GardenPeriod!, $periodKey: String!) {
+  mutation RequestGenerateGarden($period: GardenPeriod!, $periodKey: String) {
     requestGenerateGarden(period: $period, periodKey: $periodKey) {
       id
       status
@@ -88,6 +87,23 @@ export const GardensByMonth = gql`
       progress
       shareUrl
       updatedAt
+    }
+  }
+`;
+
+export const TodayMetaQuery = gql`
+  query TodayMeta {
+    currentDiaryDayKey
+  }
+`;
+
+
+export const UpdateUserSettings = gql`
+  mutation UpdateUserSettings($timezone: String!, $dayRolloverHour: Int!) {
+    updateUserSettings(timezone: $timezone, dayRolloverHour: $dayRolloverHour) {
+      id
+      timezone
+      dayRolloverHour
     }
   }
 `;

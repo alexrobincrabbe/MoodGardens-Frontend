@@ -5,7 +5,7 @@ import { ApolloProvider } from "@apollo/client";
 import { apolloClient } from "./apollo/client";
 import App from "./App";
 import "./index.css";
-import {Home, Today, Calendar} from "./pages";
+import {Home, Today, Calendar, Account} from "./pages";
 
 const router = createBrowserRouter([
   {
@@ -15,6 +15,7 @@ const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: "today", element: <Today /> },
       { path: "gardens", element: <Calendar /> },
+       { path: "account", element: <Account /> },
     ],
   },
 ]);

@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useQuery } from "@apollo/client";
 import {
   GardenFeedItem,
   TodayEntryForm,
@@ -6,13 +7,14 @@ import {
   TodayGardenPreview,
 } from "../components";
 import { useEntriesFeed } from "../hooks";
-import { isoDayKey, formatDayKey } from "../utils";
+import { formatDayKey } from "../utils";
 import type { Garden } from "../types";
 import { useAuthPanel } from "../contexts";
+import { TodayMetaQuery } from "../graphql";
 
 export function Today() {
   const { authed, busy } = useAuthPanel();
-  const today = isoDayKey();
+
   const {
     items,
     hasMore,
@@ -22,7 +24,13 @@ export function Today() {
     initialError,
     initialLoading,
   } = useEntriesFeed({ authed: authed && !busy });
+  const { data: todayData, loading: todayLoading } = useQuery(TodayMetaQuery, {
+    skip: !authed,
+    fetchPolicy: "network-only",
+    notifyOnNetworkStatusChange: true,
+  });
 
+  const today = todayData?.currentDiaryDayKey ?? null;
   const todaysItem = items.find((e) => e.dayKey === today);
   const isTodayLogged = !!todaysItem;
 
@@ -30,7 +38,6 @@ export function Today() {
   const isTodayGardenFinished =
     todayGardenStatus === "READY" || todayGardenStatus === "FAILED";
 
-  // 👇 local flag that gets set when TodayGardenPreview sees READY
   const [todayGardenFinishedLocally, setTodayGardenFinishedLocally] =
     useState(false);
 
@@ -41,11 +48,12 @@ export function Today() {
   const shouldShowAlreadyLoggedBanner =
     authed &&
     !busy &&
+    !!today &&
     isTodayLogged &&
     (isTodayGardenFinished || todayGardenFinishedLocally);
 
   return (
-    <div className="mx-auto rounded-2xl bg-white max-w-2xl p-6 space-y-6">
+    <div className="mx-auto max-w-2xl space-y-6 rounded-2xl bg-white p-6">
       {busy && (
         <div className="rounded-md border bg-gray-50 p-3 text-sm text-gray-600">
           Checking session…
@@ -58,12 +66,12 @@ export function Today() {
         </div>
       )}
 
-      {authed && !initialLoading && !isTodayLogged && (
+      {authed && !initialLoading && !todayLoading && !isTodayLogged && (
         <TodayEntryForm refetchFeed={refetchFeed} />
       )}
 
       {shouldShowAlreadyLoggedBanner && (
-        <div className="rounded-lg bg-gray-50 p-3 text-2xl text-center text-gray-700">
+        <div className="rounded-lg bg-gray-50 p-3 text-center text-2xl text-gray-700">
           You’ve already logged an entry for today
         </div>
       )}

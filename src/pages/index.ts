@@ -1,3 +1,4 @@
-export {Calendar} from "./Calendar";
-export {Home} from "./Home";
-export {Today} from "./Today";
+export {Calendar} from "./Calendar"
+export {Home} from "./Home"
+export {Today} from "./Today"
+export {Account} from "./Account"
