@@ -2,7 +2,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { entrySchema, type EntryForm } from "../../validation";
 import { useTodayEntrySubmit } from "../../hooks";
-import { isoDayKey } from "../../utils";
 import { useAuthPanel } from "../../contexts";
 import { GenericButton } from "../Common/GenericButton";
 
@@ -12,12 +11,10 @@ type TodayEntryFormProps = {
 
 export function TodayEntryForm({ refetchFeed }: TodayEntryFormProps) {
   const { user } = useAuthPanel();
-  const today = isoDayKey();
   const formVars = useForm<EntryForm>({ resolver: zodResolver(entrySchema) });
   const { register, handleSubmit, formState, reset: resetForm } = formVars;
   const { errors, isSubmitting } = formState;
   const { onSubmit, statusText } = useTodayEntrySubmit({
-    today,
     resetForm,
     refetchFeed,
   });
