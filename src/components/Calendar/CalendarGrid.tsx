@@ -48,7 +48,7 @@ export const CalendarGrid = memo(function CalendarGrid({
             className="relative flex flex-col gap-1 rounded border border-gray-200 bg-white sm:gap-2"
             key={key}
           >
-            <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-2 text-xs md:text-xl text-white">
+            <div className="pointer-events-none absolute top-1/2 left-1/2 z-2 -translate-x-1/2 -translate-y-1/2 text-xs text-white md:text-xl">
               {day}
             </div>
             <div className="relative aspect-square w-full overflow-visible rounded bg-gray-50">
@@ -63,7 +63,7 @@ export const CalendarGrid = memo(function CalendarGrid({
                       shareUrl: (g as any)?.shareUrl ?? null,
                     });
                   }}
-                  className="absolute inset-0 transition-transform duration-300 hover:scale-110"
+                  className="absolute inset-0 shadow-black transition-all duration-300 hover:scale-110 hover:shadow-2xl"
                   aria-label={`Open garden preview for ${key}`}
                   title="Open preview"
                 >

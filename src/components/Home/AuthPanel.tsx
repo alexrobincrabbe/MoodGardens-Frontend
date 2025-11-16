@@ -3,6 +3,7 @@ import { User } from "../../graphql/auth";
 import { useAuthPanel } from "../../contexts";
 import toast from "react-hot-toast";
 import { GenericButton } from "../Common/GenericButton";
+import { useNavigate } from "react-router-dom";
 
 export function AuthPanel() {
   return (
@@ -30,7 +31,9 @@ function SetModeButton({ buttonMode, className }: SetModeButtonProps) {
       className={
         className +
         ` px-3 py-1 ${
-          buttonMode === mode ? "border-2 border-slate-500 bg-coral text-white" : "bg-peach-cream "
+          buttonMode === mode
+            ? "bg-coral border-2 border-slate-500 text-white"
+            : "bg-peach-cream"
         }`
       }
       disabled={busy}
@@ -46,6 +49,7 @@ function RegisterLoginForm() {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [msg, setMsg] = useState<string>("");
+  const navigate = useNavigate();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -78,6 +82,7 @@ function RegisterLoginForm() {
         toast.success(`Registered with email address ${loginDetails.email}`);
         setPassword("");
         setDisplayName("");
+        navigate("/today");
       } else {
         const loginUser = await loginMut({
           variables: loginDetails,
@@ -90,6 +95,7 @@ function RegisterLoginForm() {
         toast.success(`Signed in as ${loginDetails.email}`);
         setMsg("Signed in.");
         setPassword("");
+        navigate("/today");
       }
     } catch (err: any) {
       const network = (err as any)?.networkError as any;
@@ -127,9 +133,7 @@ function RegisterLoginForm() {
       </div>
       {mode === "register" && (
         <div>
-          <label className="block text-center">
-            Display Name
-          </label>
+          <label className="block text-center">Display Name</label>
           <input
             className="mt-1 w-full rounded-lg bg-emerald-50 p-2 text-center"
             placeholder="choose a name"
@@ -140,9 +144,7 @@ function RegisterLoginForm() {
         </div>
       )}
       <div>
-        <label className="block text-center">
-          Password
-        </label>
+        <label className="block text-center">Password</label>
         <input
           type="password"
           className="mt-1 w-full rounded-lg bg-emerald-50 p-2 text-center"
