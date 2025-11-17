@@ -107,3 +107,19 @@ export const UpdateUserSettings = gql`
     }
   }
 `;
+
+export const UpdateUserProfile = gql`
+  mutation UpdateUserProfile($displayName: String!, $email: String!){
+    updateUserProfile(displayName: $displayName, email: $email){
+    id
+    displayName
+    email
+    }
+  }
+`;
+
+export const ChangePassword = gql `
+    mutation ChangePassword($currentPassword: String!, $newPassword: String!){
+        changePassword(currentPassword: $currentPassword, newPassword: $newPassword)
+    }
+`

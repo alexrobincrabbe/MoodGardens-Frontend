@@ -48,3 +48,23 @@ export const UpdateDisplayName = gql`
     }
   }
 `;
+
+export const RequestPasswordReset = gql`
+  mutation RequestPasswordReset($email: String!) {
+    requestPasswordReset(email: $email)
+  }
+`;
+
+
+export const LoginWithGoogle = gql`
+  mutation LoginWithGoogle($idToken: String!) {
+    loginWithGoogle(idToken: $idToken) {
+      token
+      user {
+        id
+        email
+        displayName
+      }
+    }
+  }
+`;

@@ -1,85 +1,57 @@
-import { useEffect, useState } from "react";
-import { useQuery, useMutation } from "@apollo/client";
+import { useEffect, useState, type FormEvent } from "react";
+import { useMutation } from "@apollo/client";
 import { toast } from "react-hot-toast";
-import { User, UpdateUserSettings, TodayMetaQuery } from "../graphql";
+import {
+  User,
+  UpdateUserSettings,
+  TodayMetaQuery,
+  UpdateUserProfile,
+  ChangePassword,
+} from "../graphql";
 
-// --- timezone data + labels ---
-
-const OFFSET_ZONES = Array.from({ length: 27 }, (_, i) => {
-  const offset = i - 12; // -12 → +14
-  const sign = offset >= 0 ? "+" : "-";
-  const abs = Math.abs(offset).toString().padStart(2, "0");
-  return `UTC${sign}${abs}:00`;
-});
-
-const COMMON_TZS = [
-  "UTC",
-  "Europe/Berlin",
-  "Europe/London",
-  "Europe/Paris",
-  "America/New_York",
-  "America/Chicago",
-  "America/Denver",
-  "America/Los_Angeles",
-  "Asia/Tokyo",
-  "Asia/Hong_Kong",
-  "Asia/Singapore",
-  "Australia/Sydney",
-];
-
-const ALL_TIMEZONES = [...COMMON_TZS, ...OFFSET_ZONES];
-
-const TZ_LABEL_OVERRIDES: Record<string, string> = {
-  "Europe/Berlin": "Europe/Berlin (UTC+01:00)",
-  "Europe/London": "Europe/London (UTC+00:00)",
-  "Europe/Paris": "Europe/Paris (UTC+01:00)",
-  "America/New_York": "America/New_York (UTC-05:00)",
-  "America/Chicago": "America/Chicago (UTC-06:00)",
-  "America/Denver": "America/Denver (UTC-07:00)",
-  "America/Los_Angeles": "America/Los_Angeles (UTC-08:00)",
-  "Asia/Tokyo": "Asia/Tokyo (UTC+09:00)",
-  "Asia/Hong_Kong": "Asia/Hong_Kong (UTC+08:00)",
-  "Asia/Singapore": "Asia/Singapore (UTC+08:00)",
-  "Australia/Sydney": "Australia/Sydney (UTC+10:00)",
-};
-
-function getTimezoneLabel(tz: string): string {
-  if (TZ_LABEL_OVERRIDES[tz]) return TZ_LABEL_OVERRIDES[tz];
-  if (tz.startsWith("UTC")) return tz;
-  return tz;
-}
-
-// --- component ---
+import { getTimezoneLabel, ALL_TIMEZONES } from "../utils";
+import { useAuthData } from "../hooks";
 
 export function Account() {
-  const { data, loading, error } = useQuery(User, {
-    fetchPolicy: "cache-and-network",
-  });
+  const { user, authReady } = useAuthData();
 
-  const [updateSettings, { loading: saving }] = useMutation(UpdateUserSettings);
-
-  const user = data?.user ?? null;
-
+  // Existing settings
   const [timezone, setTimezone] = useState("UTC");
   const [dayRolloverHour, setDayRolloverHour] = useState(0);
 
-  // Seed from user when it loads
+  // New profile fields
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+
+  // New password fields
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [updateSettings, { loading: savingSettings }] =
+    useMutation(UpdateUserSettings);
+
+  const [updateProfile, { loading: savingProfile }] =
+    useMutation(UpdateUserProfile);
+
+  const [changePassword, { loading: changingPassword }] =
+    useMutation(ChangePassword);
+
   useEffect(() => {
     if (!user) return;
     setTimezone(user.timezone ?? "UTC");
     setDayRolloverHour(user.dayRolloverHour ?? 0);
+    setDisplayName(user.displayName ?? "");
+    setEmail(user.email ?? "");
   }, [user]);
 
-  // Helper: save settings when a value changes
   async function saveSettings(partial: {
     timezone?: string;
     dayRolloverHour?: number;
   }) {
     const nextTimezone = partial.timezone ?? timezone;
-    const nextHour =
-      partial.dayRolloverHour ?? dayRolloverHour ?? 0;
+    const nextHour = partial.dayRolloverHour ?? dayRolloverHour ?? 0;
 
-    // Update local state immediately for snappy UI
     setTimezone(nextTimezone);
     setDayRolloverHour(nextHour);
 
@@ -91,10 +63,7 @@ export function Account() {
           timezone: nextTimezone,
           dayRolloverHour: safeHour,
         },
-        refetchQueries: [
-          { query: User },
-          { query: TodayMetaQuery }, // so Today page uses fresh day key
-        ],
+        refetchQueries: [{ query: User }, { query: TodayMetaQuery }],
         awaitRefetchQueries: false,
       });
 
@@ -105,20 +74,87 @@ export function Account() {
     }
   }
 
-  if (loading && !user) {
+  async function handleSaveProfile(e: FormEvent) {
+    e.preventDefault();
+
+    if (!displayName.trim()) {
+      toast.error("Display name cannot be empty.");
+      return;
+    }
+    if (!email.trim()) {
+      toast.error("Email cannot be empty.");
+      return;
+    }
+
+    try {
+      const result = await updateProfile({
+        variables: {
+          displayName: displayName.trim(),
+          email: email.trim(),
+        },
+        refetchQueries: [{ query: User }],
+      });
+
+      if (result.errors && result.errors.length > 0) {
+        // Treat GraphQL errors as failures
+        const msg =
+          result.errors[0].message ?? "Could not update your account details.";
+        toast.error(msg);
+        return;
+      }
+
+      if (!result.data?.updateUserProfile) {
+        toast.error("Could not update your account details.");
+        return;
+      }
+
+      toast.success("Account details updated");
+    } catch (err: any) {
+      // This still catches *network* errors
+      console.error("[Account] updateUserProfile network error:", err);
+      toast.error("Network error while updating profile. Please try again.");
+    }
+  }
+
+  async function handleChangePassword(e: FormEvent) {
+    e.preventDefault();
+
+    // local validation ...
+
+    try {
+      const result = await changePassword({
+        variables: {
+          currentPassword,
+          newPassword,
+        },
+      });
+
+      if (result.errors && result.errors.length > 0) {
+        const msg =
+          result.errors[0].message ?? "Could not change your password.";
+        toast.error(msg);
+        return;
+      }
+
+      if (!result.data?.changePassword) {
+        toast.error("Could not change your password.");
+        return;
+      }
+
+      toast.success("Password updated");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err: any) {
+      console.error("[Account] changePassword network error:", err);
+      toast.error("Network error while changing password. Please try again.");
+    }
+  }
+
+  if (!authReady && !user) {
     return (
       <div className="mx-auto max-w-xl rounded-2xl bg-white p-6">
         <p className="text-sm text-gray-500">Loading account settings…</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="mx-auto max-w-xl rounded-2xl bg-white p-6">
-        <p className="text-sm text-red-600">
-          Could not load account settings: {error.message}
-        </p>
       </div>
     );
   }
@@ -136,23 +172,108 @@ export function Account() {
   const isKnownTimezone = ALL_TIMEZONES.includes(timezone);
 
   return (
-    <div className="mx-auto max-w-xl rounded-2xl bg-white p-6 space-y-6">
+    <div className="mx-auto max-w-xl space-y-8 rounded-2xl bg-white p-6">
       <h1 className="text-3xl font-semibold">Account</h1>
 
-      <section className="space-y-1">
-        <p className="text-sm text-gray-600">
-          <span className="font-medium">Email:</span> {user.email}
-        </p>
-        <p className="text-sm text-gray-600">
-          <span className="font-medium">Display name:</span>{" "}
-          {user.displayName}
-        </p>
+      {/* Profile settings */}
+      <section className="space-y-4">
+        <h2 className="text-lg font-medium">Profile</h2>
+        <form onSubmit={handleSaveProfile} className="space-y-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Display name
+            </label>
+            <input
+              type="text"
+              className="w-full rounded-md border border-gray-300 p-2 text-sm"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              disabled={savingProfile}
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium">Email</label>
+            <input
+              type="email"
+              className="w-full rounded-md border border-gray-300 p-2 text-sm"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={savingProfile}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Used for login and account-related notifications.
+            </p>
+          </div>
+
+          <button
+            type="submit"
+            disabled={savingProfile}
+            className="inline-flex items-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {savingProfile ? "Saving…" : "Save changes"}
+          </button>
+        </form>
       </section>
 
-      <section className="space-y-6">
+      {/* Security / password */}
+      <section className="space-y-4 border-t border-gray-100 pt-6">
+        <h2 className="text-lg font-medium">Security</h2>
+        <form onSubmit={handleChangePassword} className="space-y-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Current password
+            </label>
+            <input
+              type="password"
+              className="w-full rounded-md border border-gray-300 p-2 text-sm"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              disabled={changingPassword}
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              New password
+            </label>
+            <input
+              type="password"
+              className="w-full rounded-md border border-gray-300 p-2 text-sm"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              disabled={changingPassword}
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Confirm new password
+            </label>
+            <input
+              type="password"
+              className="w-full rounded-md border border-gray-300 p-2 text-sm"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={changingPassword}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={changingPassword}
+            className="inline-flex items-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {changingPassword ? "Updating…" : "Update password"}
+          </button>
+        </form>
+      </section>
+
+      {/* Timezone & rollover */}
+      <section className="space-y-6 border-t border-gray-100 pt-6">
         {/* Timezone */}
         <div>
-          <label className="block text-sm font-medium mb-1">Timezone</label>
+          <label className="mb-1 block text-sm font-medium">Timezone</label>
           <select
             className="w-full rounded-md border border-gray-300 p-2 text-sm"
             value={isKnownTimezone ? timezone : "CUSTOM"}
@@ -161,7 +282,7 @@ export function Account() {
               if (val === "CUSTOM") return;
               saveSettings({ timezone: val });
             }}
-            disabled={saving}
+            disabled={savingSettings}
           >
             {ALL_TIMEZONES.map((tz) => (
               <option key={tz} value={tz}>
@@ -171,7 +292,6 @@ export function Account() {
             <option value="CUSTOM">Custom timezone…</option>
           </select>
 
-          {/* Custom text input when timezone isn't in the list */}
           {!isKnownTimezone && (
             <input
               className="mt-2 w-full rounded-md border border-gray-300 p-2 text-sm"
@@ -179,18 +299,18 @@ export function Account() {
               onChange={(e) => setTimezone(e.target.value)}
               onBlur={() => saveSettings({ timezone })}
               placeholder="Enter IANA timezone, e.g. Europe/Berlin"
-              disabled={saving}
+              disabled={savingSettings}
             />
           )}
 
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="mt-1 text-xs text-gray-500">
             Used to decide which day your diary entry belongs to.
           </p>
         </div>
 
         {/* Day rollover hour */}
         <div>
-          <label className="block text-sm font-medium mb-1">
+          <label className="mb-1 block text-sm font-medium">
             Day rollover time
           </label>
           <select
@@ -200,7 +320,7 @@ export function Account() {
               const hour = Number(e.target.value);
               saveSettings({ dayRolloverHour: hour });
             }}
-            disabled={saving}
+            disabled={savingSettings}
           >
             {Array.from({ length: 24 }, (_, h) => (
               <option key={h} value={h}>
@@ -208,7 +328,7 @@ export function Account() {
               </option>
             ))}
           </select>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="mt-1 text-xs text-gray-500">
             Entries after midnight but before this time count as the previous
             day.
           </p>

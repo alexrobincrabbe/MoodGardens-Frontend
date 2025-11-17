@@ -4,6 +4,9 @@ import { useAuthPanel } from "../../contexts";
 import toast from "react-hot-toast";
 import { GenericButton } from "../Common/GenericButton";
 import { useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
+import { useMutation } from "@apollo/client";
+import { LoginWithGoogle } from "../../graphql/auth";
 
 export function AuthPanel() {
   return (
@@ -44,6 +47,8 @@ function SetModeButton({ buttonMode, className }: SetModeButtonProps) {
 }
 
 function RegisterLoginForm() {
+  const [loginWithGoogleMut] = useMutation(LoginWithGoogle);
+
   const { mode, busy, registerMut, loginMut, client } = useAuthPanel();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -171,6 +176,45 @@ function RegisterLoginForm() {
             ? "Create account"
             : "Sign in"}
       </GenericButton>
+
+      {/* Divider */}
+      <div className="my-2 text-xs text-gray-400">or</div>
+
+      {/* Google login */}
+
+      <GoogleLogin
+        onSuccess={async (credentialResponse) => {
+          try {
+            const idToken = credentialResponse.credential;
+            if (!idToken) {
+              toast.error("Could not get Google credential.");
+              return;
+            }
+
+            const result = await loginWithGoogleMut({
+              variables: { idToken },
+              refetchQueries: [{ query: User }],
+            });
+
+            await client.resetStore();
+
+            const user = result.data?.loginWithGoogle?.user;
+            if (!user)
+              throw new Error("Unexpected response from Google login.");
+
+            toast.success(`Signed in as ${user.email}`);
+            setMsg("Signed in.");
+            setPassword("");
+            navigate("/today");
+          } catch (err: any) {
+            console.log(err);
+            // same error handling pattern as your other mutations
+          }
+        }}
+        onError={() => {
+          toast.error("Google login failed.");
+        }}
+      />
 
       {msg && <p className="text-sm text-gray-600">{msg}</p>}
     </form>
