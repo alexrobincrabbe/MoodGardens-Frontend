@@ -74,6 +74,23 @@ export const GetGarden = gql`
   }
 `;
 
+export const GetGardensByPeriod = gql`
+    query GetGardensByPeriod($period:GardenPeriod!){
+      gardensByPeriod(period: $period){
+        id
+        status
+        imageUrl
+        publicId
+        shareUrl
+        summary
+        period
+        periodKey
+        progress
+        updatedAt
+        }
+    }
+`
+
 export const GardensByMonth = gql`
   query GardensByMonth($monthKey: String!) {
     gardensByMonth(monthKey: $monthKey) {
@@ -118,8 +135,9 @@ export const UpdateUserProfile = gql`
   }
 `;
 
-export const ChangePassword = gql `
+export const ChangePassword = gql`
     mutation ChangePassword($currentPassword: String!, $newPassword: String!){
         changePassword(currentPassword: $currentPassword, newPassword: $newPassword)
     }
+
 `
