@@ -73,13 +73,13 @@ export function PreviewModal({
 
   const goPrev = useCallback(() => {
     if (!hasPrev) return;
-    setDirection(-1); // left
+    setDirection(1); // left
     onSelect(previewGallery[index - 1]);
   }, [hasPrev, previewGallery, index, onSelect]);
 
   const goNext = useCallback(() => {
     if (!hasNext) return;
-    setDirection(1); // right
+    setDirection(-1); // right
     onSelect(previewGallery[index + 1]);
   }, [hasNext, previewGallery, index, onSelect]);
 
@@ -124,7 +124,7 @@ export function PreviewModal({
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
-      if (e.key === "ArrowLeft") goPrev();
+      if (e.key === "ArrowLeft")goPrev() ;
       if (e.key === "ArrowRight") goNext();
     };
     window.addEventListener("keydown", onKey);
@@ -158,9 +158,9 @@ export function PreviewModal({
 
     if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
       if (deltaX < 0 && hasNext) {
-        goPrev();
+          goNext();
       } else if (deltaX > 0 && hasPrev) {
-        goNext();
+      goPrev();
       }
     }
 
