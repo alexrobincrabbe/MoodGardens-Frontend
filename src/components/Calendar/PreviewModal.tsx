@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { GetDiaryEntry } from "../../graphql";
 import { useQuery } from "@apollo/client";
 import {
@@ -131,6 +131,43 @@ export function PreviewModal({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose, goPrev, goNext]);
 
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+
+  const SWIPE_THRESHOLD = 50; // px
+  const VERTICAL_TOLERANCE = 40; // allow some vertical movement
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    const touch = e.touches[0];
+    touchStartX.current = touch.clientX;
+    touchStartY.current = touch.clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (touchStartX.current == null || touchStartY.current == null) return;
+
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - touchStartX.current;
+    const deltaY = touch.clientY - touchStartY.current;
+
+    // ignore mostly vertical swipes
+    if (Math.abs(deltaY) > VERTICAL_TOLERANCE) {
+      touchStartX.current = null;
+      touchStartY.current = null;
+      return;
+    }
+
+    if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
+      if (deltaX < 0 && hasNext) {
+        goPrev();
+      } else if (deltaX > 0 && hasPrev) {
+        goNext();
+      }
+    }
+
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
@@ -202,8 +239,12 @@ export function PreviewModal({
         </div>
 
         {/* Scrollable content area */}
-        <div className="flex-1 overflow-x-hidden overflow-y-hidden">
-          <div className="relative h-screen p-4 [perspective:1200px] md:h-[430px]">
+        <div
+          className="flex-1 overflow-x-hidden overflow-y-scroll lg:overflow-y-hidden"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div className="relative h-screen p-4 [perspective:1200px] lg:h-[430px]">
             <AnimatePresence initial={false} custom={direction}>
               <motion.div
                 key={selected.dayKey}
@@ -213,15 +254,15 @@ export function PreviewModal({
                 animate="center"
                 exit="exit"
                 transition={{ duration: 0.6, ease: "easeInOut" }}
-                className="absolute inset-0 grid grid-cols-1 rounded-xl bg-white shadow-sm md:grid-cols-2 md:gap-4"
+                className="absolute inset-0 grid grid-cols-1 rounded-xl bg-white shadow-sm lg:grid-cols-2 lg:gap-4"
                 style={{
                   transformStyle: "preserve-3d",
                   transformOrigin: "left center", // 👈 always left
                 }}
               >
                 {/* Image */}
-                <div className="flex h-[430px] items-center justify-center">
-                  <div className="relative m-2 mb-0 aspect-square w-full overflow-hidden rounded-lg md:mb-2">
+                <div className="flex h-full lg:h-[430px] items-center justify-center">
+                  <div className="relative m-2 mb-0 aspect-square w-full overflow-hidden rounded-lg lg:mb-2">
                     <AdvancedImage
                       key={selected.publicId}
                       cldImg={gardenLarge(selected.publicId)}
@@ -258,7 +299,7 @@ export function PreviewModal({
                 </div>
 
                 {/* Diary entry */}
-                <div className="flex min-h-[200px] flex-col p-2 pt-0 md:pt-2">
+                <div className="flex min-h-[200px] flex-col p-2 pt-0 lg:pt-2">
                   <h4 className="mb-2 text-lg">Diary entry</h4>
                   <div className="flex-1 overflow-y-auto pr-2">
                     {entryLoading && (
