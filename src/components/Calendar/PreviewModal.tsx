@@ -13,9 +13,15 @@ import {
   gardenDownloadUrl,
   gardenShareUrl,
   downloadImage,
-  formatDayKey
+  formatDayKey,
 } from "../../utils";
 import type { SelectedGarden } from "../../types";
+import {
+  motion,
+  AnimatePresence,
+  type Variants,
+  type Transition,
+} from "framer-motion";
 
 type PreviewModalProps = {
   selected: SelectedGarden;
@@ -40,7 +46,7 @@ export function PreviewModal({
     fetchPolicy: "network-only",
   });
 
-const entryText: string | null = data?.diaryEntry?.text ?? null;
+  const entryText: string | null = data?.diaryEntry?.text ?? null;
 
   useEffect(() => {
     setImgReady(false);
@@ -55,21 +61,65 @@ const entryText: string | null = data?.diaryEntry?.text ?? null;
 
   const index = useMemo(
     () => previewGallery.findIndex((g) => g.dayKey === selected.dayKey),
-    [previewGallery, selected.dayKey]
+    [previewGallery, selected.dayKey],
   );
 
   const hasPrev = index > 0;
   const hasNext = index >= 0 && index < previewGallery.length - 1;
 
+  type Direction = 1 | -1;
+
+  const [direction, setDirection] = useState<Direction>(1);
+
   const goPrev = useCallback(() => {
     if (!hasPrev) return;
+    setDirection(-1); // left
     onSelect(previewGallery[index - 1]);
   }, [hasPrev, previewGallery, index, onSelect]);
 
   const goNext = useCallback(() => {
     if (!hasNext) return;
+    setDirection(1); // right
     onSelect(previewGallery[index + 1]);
   }, [hasNext, previewGallery, index, onSelect]);
+
+  const flipExitTransition: Transition = {
+    rotateY: { duration: 0.6, ease: "easeInOut" }, // page rotation
+    opacity: { delay: 0.6, duration: 0.1 }, // fade starts later
+  };
+
+  const pageVariants: Variants = {
+    enter: (direction: Direction) =>
+      direction === 1
+        ? // NEXT → new page flips in
+          {
+            opacity: 0,
+            rotateY: -90,
+            transition: flipExitTransition,
+            zIndex: 2,
+          }
+        : // PREV → new page is already flat, just fade in
+          { opacity: 1, rotateY: 0, zIndex: 1, transition: flipExitTransition },
+
+    center: { opacity: 1, rotateY: 0 },
+
+    exit: (direction: Direction) =>
+      direction === -1
+        ? {
+            // PREV → current page flips away to the left
+            opacity: 0,
+            rotateY: -90,
+            zIndex: 2,
+            transition: flipExitTransition,
+          }
+        : {
+            // NEXT → current page just fades out
+            opacity: 0,
+            rotateY: 0,
+            zIndex: 1,
+            transition: flipExitTransition,
+          },
+  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -91,15 +141,14 @@ const entryText: string | null = data?.diaryEntry?.text ?? null;
       }}
     >
       <div className="absolute inset-0 bg-black/60" />
-      <div className="relative z-10 mx-2 flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
+      <div className="relative z-10 mx-2 flex max-h-[98vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
         {/* Left arrow */}
         <button
           type="button"
           onClick={goPrev}
           disabled={!hasPrev}
           aria-label="Previous day"
-          className="group absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow
-             hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed"
+          className="group absolute top-1/2 left-2 z-10 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
         >
           <svg
             viewBox="0 0 24 24"
@@ -118,8 +167,7 @@ const entryText: string | null = data?.diaryEntry?.text ?? null;
           onClick={goNext}
           disabled={!hasNext}
           aria-label="Next day"
-          className="group absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow
-             hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed"
+          className="group absolute top-1/2 right-2 z-10 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
         >
           <svg
             viewBox="0 0 24 24"
@@ -133,7 +181,7 @@ const entryText: string | null = data?.diaryEntry?.text ?? null;
         </button>
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b px-4 py-3 shrink-0">
+        <div className="flex shrink-0 items-center justify-between border-b px-4 py-3">
           <div className="min-w-0">
             <h3 className="truncate text-base font-semibold">
               Mood Garden — {formatDayKey(selected.dayKey)}
@@ -154,70 +202,88 @@ const entryText: string | null = data?.diaryEntry?.text ?? null;
         </div>
 
         {/* Scrollable content area */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2">
-            {/* Image */}
-            {/* Image */}
-            <div className="relative">
-              {/* Reserve space: pick a ratio (square shown here) */}
-              <div className="relative w-full aspect-square rounded-lg overflow-hidden">
-                <AdvancedImage
-                  key={selected.publicId}
-                  cldImg={gardenLarge(selected.publicId)}
-                  plugins={[
-                    lazyload(),
-                    responsive({ steps: [480, 640, 800, 1024, 1280, 1600] }),
-                    placeholder({ mode: "blur" }),
-                  ]}
-                  alt={`Garden for ${selected.dayKey}`}
-                  decoding="async"
-                  className="absolute inset-0 h-full w-full object-cover"
-                  onLoad={() => setImgReady(true)}
-                />
+        <div className="flex-1 overflow-x-hidden overflow-y-hidden">
+          <div className="relative h-screen p-4 [perspective:1200px] md:h-[430px]">
+            <AnimatePresence initial={false} custom={direction}>
+              <motion.div
+                key={selected.dayKey}
+                custom={direction}
+                variants={pageVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.6, ease: "easeInOut" }}
+                className="absolute inset-0 grid grid-cols-1 rounded-xl bg-white shadow-sm md:grid-cols-2 md:gap-4"
+                style={{
+                  transformStyle: "preserve-3d",
+                  transformOrigin: "left center", // 👈 always left
+                }}
+              >
+                {/* Image */}
+                <div className="flex h-[430px] items-center justify-center">
+                  <div className="relative m-2 mb-0 aspect-square w-full overflow-hidden rounded-lg md:mb-2">
+                    <AdvancedImage
+                      key={selected.publicId}
+                      cldImg={gardenLarge(selected.publicId)}
+                      plugins={[
+                        lazyload(),
+                        responsive({
+                          steps: [480, 640, 800, 1024, 1280, 1600],
+                        }),
+                        placeholder({ mode: "blur" }),
+                      ]}
+                      alt={`Garden for ${selected.dayKey}`}
+                      decoding="async"
+                      className="absolute inset-0 h-full w-full object-contain"
+                      onLoad={() => setImgReady(true)}
+                    />
 
-                {!imgReady && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-sm">
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <svg
-                        className="h-4 w-4 animate-spin"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      >
-                        <circle cx="12" cy="12" r="10" />
-                      </svg>
-                      Loading image…
-                    </div>
+                    {!imgReady && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-sm">
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <svg
+                            className="h-4 w-4 animate-spin"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          >
+                            <circle cx="12" cy="12" r="10" />
+                          </svg>
+                          Loading image…
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
+                </div>
 
-            {/* Diary entry */}
-            <div className="flex min-h-[200px] flex-col">
-              <h4 className="mb-2 text-lg">
-                Diary entry
-              </h4>
-
-              {entryLoading && (
-                <p className="text-sm text-gray-500">Loading entry…</p>
-              )}
-              {entryError && (
-                <p className="text-sm text-red-600">Failed to load entry.</p>
-              )}
-              {!entryLoading &&
-                !entryError &&
-                (entryText ? (
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-800">
-                    {entryText}
-                  </p>
-                ) : (
-                  <p className="text-sm text-gray-500">
-                    No diary entry saved for this day.
-                  </p>
-                ))}
-            </div>
+                {/* Diary entry */}
+                <div className="flex min-h-[200px] flex-col p-2 pt-0 md:pt-2">
+                  <h4 className="mb-2 text-lg">Diary entry</h4>
+                  <div className="flex-1 overflow-y-auto pr-2">
+                    {entryLoading && (
+                      <p className="text-sm text-gray-500">Loading entry…</p>
+                    )}
+                    {entryError && (
+                      <p className="text-sm text-red-600">
+                        Failed to load entry.
+                      </p>
+                    )}
+                    {!entryLoading &&
+                      !entryError &&
+                      (entryText ? (
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap text-gray-800">
+                          {entryText}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-gray-500">
+                          No diary entry saved for this day.
+                        </p>
+                      ))}
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
 
@@ -230,9 +296,9 @@ const entryText: string | null = data?.diaryEntry?.text ?? null;
                 downloadImage(
                   gardenDownloadUrl(
                     selected.publicId,
-                    `mood-garden-${selected.dayKey}.png`
+                    `mood-garden-${selected.dayKey}.png`,
                   ),
-                  `mood-garden-${selected.dayKey}.png`
+                  `mood-garden-${selected.dayKey}.png`,
                 )
               }
               className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50"
