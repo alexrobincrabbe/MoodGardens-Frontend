@@ -38,17 +38,6 @@ export const Logout = gql`
   }
 `;
 
-export const UpdateDisplayName = gql`
-  mutation UpdateDisplayName($displayName: String!) {
-    updateDisplayName(displayName: $displayName) {
-      id
-      email
-      createdAt
-      displayName
-    }
-  }
-`;
-
 export const RequestPasswordReset = gql`
   mutation RequestPasswordReset($email: String!) {
     requestPasswordReset(email: $email)

@@ -1,5 +1,3 @@
-// src/components/index.ts
-export { AccountDetails } from "./Home/AccountDetails"
 export { AuthPanel } from "./Home/AuthPanel"
 export { TodayEntryForm } from "./Today/EntryForm"
 export { GardenFeedItem } from "./Today/GardenFeed"
