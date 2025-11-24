@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@apollo/client";
-import { GetGarden, User } from "../../graphql";
+import { GetGarden } from "../../graphql";
 import { GardenFeedItem } from "..";
 import { toast } from "react-hot-toast";
+import { useAuthData } from "../../hooks";
 
 type PreviewProps = {
   periodKey: string;
@@ -10,27 +11,19 @@ type PreviewProps = {
 };
 
 export function TodayGardenPreview({ periodKey, onGardenReady }: PreviewProps) {
-  const { data: userData, loading: userLoading } = useQuery(User, {
-    fetchPolicy: "cache-first",
-  });
-  const authed = !!userData?.user;
-  const authReady = !userLoading;
-
+  const { authed, authReady } = useAuthData();
   const { data, error, startPolling, stopPolling } = useQuery(GetGarden, {
     variables: { period: "DAY", periodKey },
     fetchPolicy: "network-only",
     notifyOnNetworkStatusChange: true,
     skip: !authed || !authReady,
   });
-
   const [progress, setProgress] = useState<number>(0);
   const rafRef = useRef<number | null>(null);
   const startTsRef = useRef<number | null>(null);
-
   const hasEverBeenNonReadyRef = useRef(false);
   const hasShownToastRef = useRef(false);
   const hasNotifiedParentRef = useRef(false);
-
   useEffect(() => {
     if (!authed) {
       stopPolling?.();
@@ -39,35 +32,28 @@ export function TodayGardenPreview({ periodKey, onGardenReady }: PreviewProps) {
     startPolling?.(1500);
     return () => stopPolling?.();
   }, [authed, startPolling, stopPolling]);
-
   const garden = data?.garden;
-
   useEffect(() => {
     const s = data?.garden?.status;
     if (s === "READY" || s === "FAILED") stopPolling?.();
   }, [data?.garden?.status, stopPolling]);
-
   const serverProgress =
     typeof (garden as any)?.progress === "number"
       ? (garden as any).progress
       : null;
-
   const status = garden?.status;
-
-  // Toast + notify parent when we see it become READY *after* being non-ready
+  const summary = garden?.summary;
   useEffect(() => {
     if (!status) return;
-
     if (status !== "READY") {
       hasEverBeenNonReadyRef.current = true;
     }
-
     if (
       status === "READY" &&
       hasEverBeenNonReadyRef.current &&
       !hasShownToastRef.current
     ) {
-      toast.success("Your garden is ready 🌱");
+      toast.success("Your garden is ready");
       hasShownToastRef.current = true;
 
       if (!hasNotifiedParentRef.current) {
@@ -76,12 +62,9 @@ export function TodayGardenPreview({ periodKey, onGardenReady }: PreviewProps) {
       }
     }
   }, [status, onGardenReady]);
-
   useEffect(() => {
     if (!authed) return;
-
     const isPending = status === "PENDING";
-
     if (status === "READY") {
       setProgress(100);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -89,7 +72,6 @@ export function TodayGardenPreview({ periodKey, onGardenReady }: PreviewProps) {
       startTsRef.current = null;
       return;
     }
-
     if (status === "FAILED") {
       setProgress(0);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -97,7 +79,6 @@ export function TodayGardenPreview({ periodKey, onGardenReady }: PreviewProps) {
       startTsRef.current = null;
       return;
     }
-
     if (serverProgress !== null && isPending) {
       setProgress(Math.max(0, Math.min(99, serverProgress)));
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -105,7 +86,6 @@ export function TodayGardenPreview({ periodKey, onGardenReady }: PreviewProps) {
       startTsRef.current = null;
       return;
     }
-
     if (isPending) {
       if (startTsRef.current == null) startTsRef.current = performance.now();
       const tick = (now: number) => {
@@ -132,17 +112,7 @@ export function TodayGardenPreview({ periodKey, onGardenReady }: PreviewProps) {
       };
     }
   }, [authed, status, serverProgress]);
-
-  function gardenStageLabel(p: number): string {
-    if (p < 20) return "Seeds planted…";
-    if (p < 50) return "Sprouting 🌱";
-    if (p < 80) return "Growing strong 🌿";
-    if (p < 100) return "Almost blooming 🌸";
-    return "Fully bloomed 🌼";
-  }
-
   const displayProgress = Math.round(serverProgress ?? progress);
-
   if (!authed) {
     return (
       <p className="text-sm text-amber-700">
@@ -150,7 +120,6 @@ export function TodayGardenPreview({ periodKey, onGardenReady }: PreviewProps) {
       </p>
     );
   }
-
   if (error) {
     return (
       <div className="mb-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
@@ -158,11 +127,9 @@ export function TodayGardenPreview({ periodKey, onGardenReady }: PreviewProps) {
       </div>
     );
   }
-
   if (!garden) {
     return <p className="text-sm text-gray-500">No garden yet.</p>;
   }
-
   if (status === "READY") {
     return <GardenFeedItem garden={garden} day={periodKey} />;
   }
@@ -174,12 +141,11 @@ export function TodayGardenPreview({ periodKey, onGardenReady }: PreviewProps) {
       </p>
 
       {status === "PENDING" && (
-        <p className="text-sm text-gray-500">Generating your mood garden…</p>
+        <p className="text-sm text-gray-500">{summary}</p>
       )}
 
       <div className="mt-2">
         <div className="mb-1 flex items-center justify-between text-xs text-gray-500">
-          <span>{gardenStageLabel(displayProgress)}</span>
           <span>{displayProgress}%</span>
         </div>
         <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
