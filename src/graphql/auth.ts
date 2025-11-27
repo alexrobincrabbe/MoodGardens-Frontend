@@ -57,3 +57,29 @@ export const LoginWithGoogle = gql`
     }
   }
 `;
+
+export const VerifyEmail = gql`
+  mutation VerifyEmail($token: String!) {
+    verifyEmail(token: $token) {
+      token
+      user {
+        id
+        email
+        displayName
+        createdAt
+        timezone
+        dayRolloverHour
+        notifyWeeklyGarden
+        notifyMonthlyGarden
+        notifyYearlyGarden
+      }
+    }
+  }
+`;
+
+
+export const ResetPassword = gql`
+  mutation ResetPassword($token: String!, $newPassword: String!) {
+    resetPassword(token: $token, newPassword: $newPassword)
+  }
+`;

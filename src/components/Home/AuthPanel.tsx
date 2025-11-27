@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { useMutation } from "@apollo/client";
 import { LoginWithGoogle } from "../../graphql/auth";
+import { RequestPasswordReset } from "../../graphql/auth";
 
 export function AuthPanel() {
   return (
@@ -48,13 +49,14 @@ function SetModeButton({ buttonMode, className }: SetModeButtonProps) {
 
 function RegisterLoginForm() {
   const [loginWithGoogleMut] = useMutation(LoginWithGoogle);
-
-  const { mode, busy, registerMut, loginMut, client } = useAuthPanel();
+  const [requestPasswordResetMut] = useMutation(RequestPasswordReset);
+  const { mode, setMode, busy, registerMut, loginMut, client } = useAuthPanel();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [msg, setMsg] = useState<string>("");
   const navigate = useNavigate();
+  const [resetBusy, setResetBusy] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -76,45 +78,169 @@ function RegisterLoginForm() {
           setMsg("Please enter a display name.");
           return;
         }
-        const newUser = await registerMut({
+
+        const result = await registerMut({
           variables: registerDetails,
-          refetchQueries: [{ query: User }],
+          // no refetchQueries – user is NOT logged in after register
         });
-        await client.resetStore();
-        const user = newUser.data?.register?.user;
-        if (!user) throw new Error("Unexpected response.");
-        setMsg("Registered & signed in.");
-        toast.success(`Registered with email address ${loginDetails.email}`);
+
+        // 1) Handle GraphQL errors returned in the result
+        const gqlError = result.errors?.[0];
+        const code = gqlError?.extensions?.code;
+
+        if (gqlError) {
+          console.error("[Auth] register GraphQL error:", gqlError);
+
+          let message =
+            gqlError.message || "Registration failed. Please try again.";
+
+          if (code === "EMAIL_IN_USE") {
+            message = "That email address is already in use.";
+          } else if (code === "BAD_USER_INPUT") {
+            // backend already sends nice messages like:
+            // "Email, password and display name are required."
+            // "Please enter a valid email address."
+            // "Password must be at least 8 characters long."
+            // so gqlError.message is usually enough
+          }
+
+          setMsg(message);
+          toast.error(message);
+          return;
+        }
+
+        // 2) If no GraphQL error but no user, treat as generic failure
+        const user = result.data?.register?.user;
+        if (!user) {
+          const fallback = "Registration failed. Please try again.";
+          setMsg(fallback);
+          toast.error(fallback);
+          return;
+        }
+
+        // 🎉 success
+        toast.success(
+          `Account created for ${loginDetails.email}. Please check your email to verify your address before signing in.`,
+        );
+        setMsg(
+          "Account created. Please check your email for a verification link before signing in.",
+        );
+
         setPassword("");
         setDisplayName("");
-        navigate("/today");
+        setMode("login");
       } else {
-        const loginUser = await loginMut({
+        // LOGIN
+        const loginResult = await loginMut({
           variables: loginDetails,
           refetchQueries: [{ query: User }],
         });
+
         await client.resetStore();
 
-        const user = loginUser.data?.login?.user;
-        if (!user) throw new Error("Unexpected response.");
+        // 1) Handle GraphQL errors returned in the result (if errorPolicy: 'all')
+        const gqlError = loginResult.errors?.[0];
+        const code = gqlError?.extensions?.code;
+
+        if (gqlError) {
+          console.error("[Auth] login GraphQL error:", gqlError);
+
+          let message = gqlError.message || "Sign-in failed. Please try again.";
+
+          if (code === "EMAIL_NOT_VERIFIED") {
+            message =
+              "Please verify your email before signing in. Check your inbox for the verification link.";
+          } else if (code === "UNAUTHENTICATED") {
+            message = "Invalid email or password.";
+          }
+
+          setMsg(message);
+          toast.error(message);
+          return;
+        }
+
+        // 2) If no GraphQL error but no user, treat as generic failure
+        const user = loginResult.data?.login?.user;
+        if (!user) {
+          const fallback = "Sign-in failed. Please try again.";
+          setMsg(fallback);
+          toast.error(fallback);
+          return;
+        }
+
         toast.success(`Signed in as ${loginDetails.email}`);
         setMsg("Signed in.");
         setPassword("");
         navigate("/today");
       }
     } catch (err: any) {
-      const network = (err as any)?.networkError as any;
-      const detailed =
-        err?.graphQLErrors?.[0]?.message ||
+      // This catch is for thrown ApolloError / network errors
+      console.error("[Auth] register/login error (raw):", err);
+
+      const graphError = err?.graphQLErrors?.[0];
+      const network = err?.networkError as any;
+      const code = graphError?.extensions?.code;
+
+      let detailed =
+        graphError?.message ||
         network?.result?.errors?.[0]?.message ||
         network?.message ||
         err?.message;
 
-      setMsg(detailed || "Authentication failed.");
-      console.error(
-        "[Auth] register/login error:",
-        JSON.stringify(network?.result ?? err, null, 2),
-      );
+      if (code === "EMAIL_NOT_VERIFIED" && mode === "login") {
+        detailed =
+          "Please verify your email before signing in. Check your inbox for the verification link.";
+      } else if (code === "UNAUTHENTICATED" && mode === "login") {
+        detailed = "Invalid email or password.";
+      } else if (code === "EMAIL_IN_USE" && mode === "register") {
+        detailed = "That email address is already in use.";
+      }
+
+      if (!detailed) {
+        detailed = "Authentication failed.";
+      }
+
+      setMsg(detailed);
+      toast.error(detailed);
+    }
+  }
+
+  async function handleRequestPasswordReset() {
+    const emailTrimmed = email.trim();
+
+    if (!emailTrimmed) {
+      const message = "Please enter your email before requesting a reset.";
+      setMsg(message);
+      toast.error(message);
+      return;
+    }
+
+    setResetBusy(true);
+
+    try {
+      await requestPasswordResetMut({
+        variables: { email: emailTrimmed },
+      });
+      const message =
+        "If an account exists for that email, a password reset link has been sent.";
+      toast.success(message);
+    } catch (err: any) {
+      console.error("[Auth] requestPasswordReset error:", err);
+
+      const graphError = err?.graphQLErrors?.[0];
+      const network = err?.networkError as any;
+
+      const detailed =
+        graphError?.message ||
+        network?.result?.errors?.[0]?.message ||
+        network?.message ||
+        err?.message ||
+        "Failed to request password reset.";
+
+      setMsg(detailed);
+      toast.error(detailed);
+    } finally {
+      setResetBusy(false);
     }
   }
 
@@ -162,6 +288,19 @@ function RegisterLoginForm() {
           disabled={busy}
         />
       </div>
+      {msg && <p className="text-sm text-red-600">{msg}</p>}
+
+      {/* Forgot password link – only in login mode */}
+      {mode === "login" && (
+        <button
+          type="button"
+          onClick={handleRequestPasswordReset}
+          disabled={busy || resetBusy}
+          className="mt-1 text-sm text-blue-600 underline disabled:opacity-60"
+        >
+          {resetBusy ? "Sending…" : "Forgot your password?"}
+        </button>
+      )}
 
       <GenericButton
         type="submit"
@@ -215,8 +354,6 @@ function RegisterLoginForm() {
           toast.error("Google login failed.");
         }}
       />
-
-      {msg && <p className="text-sm text-gray-600">{msg}</p>}
     </form>
   );
 }

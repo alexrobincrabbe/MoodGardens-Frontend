@@ -5,7 +5,15 @@ import { ApolloProvider } from "@apollo/client";
 import { apolloClient } from "./apollo/client";
 import App from "./App";
 import "./index.css";
-import { Home, Today, Calendar, Account, History } from "./pages";
+import {
+  Home,
+  Today,
+  Calendar,
+  Account,
+  History,
+  VerifyEmailPage,
+  ResetPasswordPage
+} from "./pages";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID!;
@@ -19,7 +27,9 @@ const router = createBrowserRouter([
       { path: "today", element: <Today /> },
       { path: "gardens", element: <Calendar /> },
       { path: "account", element: <Account /> },
-      { path: "history", element: <History /> }
+      { path: "history", element: <History /> },
+      { path: "/auth/verify-email", element: <VerifyEmailPage /> },
+      { path: "/auth/reset-password", element:<ResetPasswordPage />},
     ],
   },
 ]);
