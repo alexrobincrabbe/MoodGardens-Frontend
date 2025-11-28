@@ -8,7 +8,7 @@ export function useAuthData() {
     notifyOnNetworkStatusChange: true,
   });
   const user = userData?.user ?? null;
-  const isPremium = userData?.user.isPremium ?? false;
+  const isPremium = userData?.user?.isPremium ?? false;
   const authed = !!user;
   const authReady = !userLoading;
   return { user, authed, authReady, isPremium };
