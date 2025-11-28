@@ -11,9 +11,10 @@ import {
 
 import { getTimezoneLabel, ALL_TIMEZONES } from "../utils";
 import { useAuthData } from "../hooks";
+import { apiUrl } from "../lib/env";
 
 export function Account() {
-  const { user, authReady } = useAuthData();
+  const { user, authReady, isPremium } = useAuthData();
 
   // Existing settings
   const [timezone, setTimezone] = useState("UTC");
@@ -174,7 +175,8 @@ export function Account() {
   return (
     <div className="mx-auto max-w-xl space-y-8 rounded-2xl bg-white p-6">
       <h1 className="text-3xl font-semibold">Account</h1>
-
+      {!isPremium && <UpgradeToPremiumButton />}
+      {isPremium && <ManageSubscriptionButton />}
       {/* Profile settings */}
       <section className="space-y-4">
         <h2 className="text-lg font-medium">Profile</h2>
@@ -335,5 +337,70 @@ export function Account() {
         </div>
       </section>
     </div>
+  );
+}
+
+export function UpgradeToPremiumButton() {
+  const [loading, setLoading] = useState(false);
+
+  async function handleClick() {
+    try {
+      setLoading(true);
+      const res = await fetch(apiUrl("/billing/create-checkout-session"), {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        throw new Error(data.error || "Failed to start checkout");
+      }
+
+      window.location.href = data.url;
+    } catch (err) {
+      console.error(err);
+      alert("Sorry, something went wrong starting the upgrade.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <button onClick={handleClick} disabled={loading}>
+      {loading ? "Redirecting…" : "Upgrade to Premium 🌱"}
+    </button>
+  );
+}
+
+export function ManageSubscriptionButton() {
+      const [loading, setLoading] = useState(false);
+
+  async function handleManage() {
+          setLoading(true);
+
+    const res = await fetch(apiUrl("/billing/create-portal-session"), {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.url) {
+      alert(data.error || "Could not open subscription portal");
+      return;
+    }
+
+    window.location.href = data.url;
+  }
+
+  return (
+    <button
+      onClick={handleManage}
+      className="rounded-md border border-emerald-600 px-3 py-2 text-emerald-700 hover:bg-emerald-50"
+    >
+         {loading ? "Redirecting…" : "Manage subscription"}
+      
+    </button>
   );
 }

@@ -5,6 +5,7 @@ export const User = gql`
     user {
       id
       email
+      isPremium
       displayName
       createdAt
       timezone
