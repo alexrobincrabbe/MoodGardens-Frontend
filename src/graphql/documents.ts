@@ -42,8 +42,8 @@ export const PaginatedDiaryEntries = gql`
 `;
 
 export const RequestGenerateGarden = gql`
-  mutation RequestGenerateGarden($period: GardenPeriod!, $periodKey: String) {
-    requestGenerateGarden(period: $period, periodKey: $periodKey) {
+  mutation RequestGenerateGarden($period: GardenPeriod!, $periodKey: String, $gardenType:String) {
+    requestGenerateGarden(period: $period, periodKey: $periodKey, gardenType: $gardenType) {
       id
       status
       period

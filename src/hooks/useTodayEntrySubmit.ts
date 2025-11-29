@@ -13,24 +13,21 @@ export function useTodayEntrySubmit({
     refetchFeed,
 }: UseTodayEntrySubmitArgs) {
     const [statusText, setStatusText] = useState<string>("");
-
     const [upsertEntry] = useMutation(CreateDiaryEntry);
     const [requestGenerateGarden] = useMutation(RequestGenerateGarden);
 
     const onSubmit = useCallback(
         async (vals: EntryForm) => {
+                console.log("[Today] submitting vals:", vals); // should show gardenType
+
             setStatusText("");
             try {
-                // ✅ backend computes dayKey from timezone + rollover
                 await upsertEntry({
                     variables: { text: vals.text },
                 });
 
-                // for DAY we now let the backend decide periodKey as well
                 const res = await requestGenerateGarden({
-                    variables: { period: "DAY", periodKey: "dummy"},
-                    // if your GraphQL schema still requires periodKey,
-                    // keep `periodKey: "dummy"` – backend ignores it for DAY.
+                    variables: { period: "DAY", periodKey: "dummy", gardenType:vals.gardenType},
                 });
                 console.log("requestGenerateGarden result:", res.data);
 

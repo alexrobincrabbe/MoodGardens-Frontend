@@ -11,19 +11,39 @@ type TodayEntryFormProps = {
 
 export function TodayEntryForm({ refetchFeed }: TodayEntryFormProps) {
   const { user } = useAuthPanel();
-  const formVars = useForm<EntryForm>({ resolver: zodResolver(entrySchema) });
-  const { register, handleSubmit, formState, reset: resetForm } = formVars;
+  const {
+    register,
+    handleSubmit,
+    formState,
+    reset: resetForm,
+    setValue,
+  } = useForm<EntryForm>({
+    resolver: zodResolver(entrySchema),
+    defaultValues: {
+      text: "",
+      gardenType: "CLASSIC",
+    },
+  });
+
   const { errors, isSubmitting } = formState;
   const { onSubmit, statusText } = useTodayEntrySubmit({
     resetForm,
     refetchFeed,
   });
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col justify-center items-center space-y-2">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="flex flex-col items-center justify-center space-y-2"
+    >
       <div className="w-full">
         <label className="block text-sm">
           What’s on your mind {user?.displayName ?? ""}?
         </label>
+
+        {/* RHF field for gardenType */}
+        <input type="hidden" {...register("gardenType")} />
+
         <textarea
           className="mt-1 w-full rounded-lg border p-3"
           rows={4}
@@ -35,14 +55,36 @@ export function TodayEntryForm({ refetchFeed }: TodayEntryFormProps) {
         )}
       </div>
 
-      <GenericButton
-        type="submit"
-        disabled={isSubmitting}
-      >
-        {isSubmitting ? "Generating…" : "Generate Garden"}
-      </GenericButton>
+      <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3">
+        <GenericButton
+          type="submit"
+          disabled={isSubmitting}
+          onClick={() => setValue("gardenType", "CLASSIC")}
+        >
+          {isSubmitting ? "Generating…" : "Generate Garden"}
+        </GenericButton>
 
-      {statusText && <p className="mt-2 text-sm text-gray-600">{statusText}</p>}
+        <GenericButton
+          type="submit"
+          disabled={isSubmitting}
+          onClick={() => setValue("gardenType", "UNDERWATER")}
+        >
+          {isSubmitting ? "Generating…" : "Generate Underwater Garden"}
+        </GenericButton>
+
+        <GenericButton
+          type="submit"
+          disabled={isSubmitting}
+          onClick={() => setValue("gardenType", "GALAXY")}
+        >
+          {isSubmitting ? "Generating…" : "Generate Mood Galaxy"}
+        </GenericButton>
+      </div>
+
+      {statusText && (
+        <p className="mt-2 text-sm text-gray-600">{statusText}</p>
+      )}
     </form>
   );
 }
+
