@@ -64,14 +64,14 @@ v<br>
 Garden job queued (BullMQ)<br>
 |<br>
 v<br>
-    <div align="left" style="width:300px; margin: 0 auto; background:#eee;">
+    <span align="left">
 Garden Worker processes job:<br>
 1. Fetch garden + decrypt diary<br>
 2. Analyse emotions + generate prompt<br>
 3. Request image from OpenAI<br>
 4. Upload image to Cloudinary<br>
 5. Save final summary + metadata
-    </div>
+    </span>
 |<br>
 v<br>
 Garden marked READY → User sees result
@@ -225,6 +225,7 @@ Mood Gardens demonstrates:
 ## 📩 Contact
 
 **Portfolio:** https://alex-crabbe.vercel.app/contact
+
 
 
 
