@@ -4,8 +4,6 @@
 Mood Gardens transforms personal diary entries into **AI-generated emotional gardens**.  
 It combines **React + TypeScript**, **Node/Express + GraphQL**, **Prisma + Postgres**, **Redis + BullMQ workers**, **AES-GCM encryption**, and **OpenAI image generation**.
 
-This repository is designed as a **portfolio flagship project**, showcasing full-stack engineering, distributed systems, security, and cloud DevOps.
-
 ---
 
 ##  Features
@@ -194,7 +192,8 @@ Mood Gardens demonstrates:
 
 ## 📩 Contact
 
-**Portfolio:** https://alex-crabbe.vercel.app/contact
+https://alex-crabbe.vercel.app/contact
+
 
 
 
