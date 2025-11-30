@@ -118,8 +118,33 @@ Docker, Docker Hub, GitHub Actions
 
 ---
 
-## 🧭 Local Development
+## 🎨 Example Output
 
-### Install dependencies
-```bash
-npm install
+*(Images generated dynamically by user emotions — examples omitted in GitHub README)*
+
+---
+
+## 👤 About the Developer
+
+Hi — I’m **Alex Crabbe**, a full-stack developer with a background in **Biomedical Physics (MRI simulations)**.
+
+Mood Gardens demonstrates:
+
+- End-to-end encryption  
+- Distributed background processing  
+- AI image generation pipelines  
+- Cloud-native deployment  
+- Complex frontend + backend integration  
+- Secure authentication and cookie flows  
+
+**Portfolio:** https://www.alex-crabbe.vercel.app  
+**Project:** https://www.mymoodgardens.com  
+
+---
+
+## 📩 Contact
+
+**Email:** alexrobincrabbe@gmail.com  
+**LinkedIn:** https://www.linkedin.com/in/alex-crabbe
+
+
