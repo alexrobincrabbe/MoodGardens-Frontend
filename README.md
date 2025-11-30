@@ -64,7 +64,7 @@ v<br>
 Garden job queued (BullMQ)<br>
 |<br>
 v<br>
-Garden Worker processes job:
+Garden Worker processes job:</div>
 1. Fetch garden + decrypt diary
 2. Analyse emotions + generate prompt
 3. Request image from OpenAI
@@ -223,6 +223,7 @@ Mood Gardens demonstrates:
 ## 📩 Contact
 
 **Portfolio:** https://alex-crabbe.vercel.app/contact
+
 
 
 
