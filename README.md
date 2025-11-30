@@ -129,7 +129,7 @@ sequenceDiagram
 
 ---
 
-## 📂 Tech Stack
+## Tech Stack
 
 **Frontend:**  
 React, Vite, TypeScript, Tailwind, Apollo Client  
@@ -154,7 +154,7 @@ Docker, Docker Hub, GitHub Actions
 
 ---
 
-## 🎨 Example Output
+## Example Output
 
 <img width="150" height="150" alt="Birds" src="https://github.com/user-attachments/assets/121e2897-f0b3-4874-91ff-ebaf7e4c8df1" />
 <img width="150" height="150" alt="Whirl" src="https://github.com/user-attachments/assets/b0033e2b-3345-4b5b-9b37-ab3ef87d95ed" />
@@ -193,6 +193,7 @@ Mood Gardens demonstrates:
 ## 📩 Contact
 
 https://alex-crabbe.vercel.app/contact
+
 
 
 
