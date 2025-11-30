@@ -69,6 +69,62 @@ Cloudinary (Image Storage)
 Azure Key Vault (Encrypted User Keys)
 
 
+sequenceDiagram
+    autonumber
+
+    participant U as User
+    participant F as Frontend (React)
+    participant A as API (GraphQL)
+    participant DB as PostgreSQL
+    participant Q as BullMQ Queue<br/>("garden-generate")
+    participant W as Garden Worker
+    participant KV as Key Vault
+    participant OA as OpenAI Image API
+    participant CL as Cloudinary
+
+    U->>F: Write & submit diary entry
+    F->>A: GraphQL mutation: submitDiaryEntry(text)
+    
+    Note over A,DB: 1) Generate per-user DEK if needed<br/>2) Encrypt text with AES-GCM
+    A->>KV: (Optional) Fetch / unwrap user DEK
+    KV-->>A: Decrypted DEK
+    A->>DB: Store encrypted diary entry + metadata
+
+    Note over A,Q: Create Garden (PENDING) and queue job
+    A->>DB: Create Garden record (status=PENDING, progress=0)
+    A->>Q: Add job: { gardenId }
+
+    F-->>U: Show “Garden generating…” state
+
+    %% Worker side
+    Q->>W: Deliver job { gardenId }
+    W->>DB: Fetch Garden + related diary/summary
+    W->>KV: Fetch & unwrap DEK
+    KV-->>W: Decrypted DEK
+    W->>W: Decrypt diary / summary (AES-GCM)
+    W-->>DB: Update Garden progress (10–30%)
+
+    Note over W: Analyse mood → valence, arousal, emotions, tags
+    W->>W: Build Mood object + prompt components
+    W-->>DB: Update Garden progress (50%)
+
+    W->>OA: Send prompt for image generation
+    OA-->>W: Return generated image (binary buffer)
+    W-->>DB: Update Garden progress (75%)
+
+    W->>CL: Upload image buffer
+    CL-->>W: Return image URL + publicId
+
+    Note over W,DB: Save final summary, palette, status=READY
+    W-->>DB: Update Garden with imageUrl,<br/>publicId, palette, summary,<br/>status=READY, progress=100%
+
+    F->>A: Poll / subscribe for Garden status
+    A->>DB: Get Garden
+    DB-->>A: Garden (status=READY, imageUrl,…)
+    A-->>F: Garden data
+    F-->>U: Display finished Mood Garden 🌱
+
+
 ---
 
 ## Security Highlights
@@ -158,6 +214,7 @@ Mood Gardens demonstrates:
 
 **Email:** alexrobincrabbe@gmail.com  
 **LinkedIn:** https://www.linkedin.com/in/alex-crabbe
+
 
 
 
