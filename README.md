@@ -51,7 +51,7 @@ This repository is designed as a **portfolio flagship project**, showcasing full
 ---
 
 ## Architecture Overview
-<div style="display:flex;flex-direction:column;justify-content:centter;align-items:center">
+<div style="display:flex;flex-direction:column;justify-content:center;align-items:center">
 User writes diary entry <br>
 |<br>
 v<br>
@@ -225,6 +225,7 @@ Mood Gardens demonstrates:
 ## 📩 Contact
 
 **Portfolio:** https://alex-crabbe.vercel.app/contact
+
 
 
 
