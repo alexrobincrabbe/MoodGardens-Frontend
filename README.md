@@ -52,30 +52,44 @@ This repository is designed as a **portfolio flagship project**, showcasing full
 
 ## Architecture Overview
 
-User writes diary entry
+User writes diary entry 
+
 |
+
 v
+
 Diary entry encrypted (AES-GCM)
+
 |
+
 v
+
 Saved to DB (encrypted) ----> Garden record created (PENDING)
+
 |
+
 v
+
 Garden job queued (BullMQ)
+
 |
+
 v
+
 Garden Worker processes job:
 1. Fetch garden + decrypt diary
 2. Analyse emotions + generate prompt
 3. Request image from OpenAI
 4. Upload image to Cloudinary
 5. Save final summary + metadata
+   
 |
+
 v
+
 Garden marked READY → User sees result
 
-Cloudinary (Image Storage)
-Azure Key Vault (Encrypted User Keys)
+
 
 
 ## MoodGardens – Image Generation Pipeline (Overview)
@@ -95,7 +109,8 @@ sequenceDiagram
     participant DB as PostgreSQL
     participant Queue as BullMQ Queue
     participant Worker as Garden Worker
-    participant OpenAI as OpenAI Image API
+    participant OpenAI_Text as OpenAI (Text Analysis)
+    participant OpenAI_Image as OpenAI (Image Generation)
     participant Cloudinary
 
     User->>Frontend: Write & submit diary entry
@@ -108,18 +123,28 @@ sequenceDiagram
     Queue->>Worker: Deliver job (gardenId)
     Worker->>DB: Fetch garden + encrypted diary
     Worker->>Worker: Decrypt diary text
-    Worker->>Worker: Analyse emotions & build prompt
-    Worker->>OpenAI: Request image with prompt
-    OpenAI-->>Worker: Return generated image
+
+    %% Text analysis
+    Worker->>OpenAI_Text: Analyse diary text (LLM)
+    OpenAI_Text-->>Worker: Mood analysis + prompt components
+
+    Worker->>Worker: Construct final prompt (ambience, palette, symbols)
+
+    %% Image generation
+    Worker->>OpenAI_Image: Generate image with final prompt
+    OpenAI_Image-->>Worker: Return generated image (binary buffer)
+
     Worker->>Cloudinary: Upload image
-    Cloudinary-->>Worker: Return image URL
-    Worker->>DB: Save image URL, summary, status=READY
+    Cloudinary-->>Worker: Image URL + publicId
+
+    Worker->>DB: Save image URL, summary, metadata,<br/>status=READY, progress=100%
 
     Frontend->>API: Poll garden status
     API->>DB: Get garden
     DB-->>API: Garden (READY + image URL)
     API-->>Frontend: Garden data
-    Frontend-->>User: Display finished garden
+    Frontend-->>User: Display finished garden 🌱
+
 ```
 
 
@@ -213,6 +238,7 @@ Mood Gardens demonstrates:
 
 **Email:** alexrobincrabbe@gmail.com  
 **LinkedIn:** https://www.linkedin.com/in/alex-crabbe
+
 
 
 
