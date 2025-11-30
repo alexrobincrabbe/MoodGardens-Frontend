@@ -1,4 +1,4 @@
-# <img height="30" alt="moodgardens-Photoroom" src="https://github.com/user-attachments/assets/9fb77c13-0954-42db-9f19-b15745a6146e" />
+# <img height="60" alt="moodgardens-Photoroom" src="https://github.com/user-attachments/assets/9fb77c13-0954-42db-9f19-b15745a6146e" />
 ### *An AI-generated visual diary with encryption, aggregation, and emotional landscape generation*
 
 Mood Gardens transforms personal diary entries into **AI-generated emotional gardens**.  
@@ -193,6 +193,7 @@ Mood Gardens demonstrates:
 ## 📩 Contact
 
 https://alex-crabbe.vercel.app/contact
+
 
 
 
