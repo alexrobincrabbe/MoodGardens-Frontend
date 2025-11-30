@@ -40,7 +40,7 @@ This repository is designed as a **portfolio flagship project**, showcasing full
 - Mobile-friendly UI  
 - Hosted on Vercel (mymoodgardens.com)
 
-### 🧰 Strong Backend
+### Strong Backend
 - Node.js + Express + Apollo GraphQL  
 - Prisma ORM  
 - PostgreSQL (Azure)  
@@ -50,7 +50,7 @@ This repository is designed as a **portfolio flagship project**, showcasing full
 
 ---
 
-## 🏗 Architecture Overview
+## Architecture Overview
 
 Frontend (React, Vite, TS)
 |
@@ -69,60 +69,34 @@ Cloudinary (Image Storage)
 Azure Key Vault (Encrypted User Keys)
 
 
-sequenceDiagram
-    autonumber
+## MoodGardens – Image Generation Pipeline (Overview)
 
-    participant U as User
-    participant F as Frontend (React)
-    participant A as API (GraphQL)
-    participant DB as PostgreSQL
-    participant Q as BullMQ Queue<br/>("garden-generate")
-    participant W as Garden Worker
-    participant KV as Key Vault
-    participant OA as OpenAI Image API
-    participant CL as Cloudinary
+The MoodGardens Image Generation Pipeline transforms encrypted diary entries into AI-generated emotional gardens using a secure, multi-stage processing workflow.
+The system is designed for privacy, scalability, and asynchronous processing, powered by BullMQ, Redis, Prisma, OpenAI, and Cloudinary
 
-    U->>F: Write & submit diary entry
-    F->>A: GraphQL mutation: submitDiaryEntry(text)
-    
-    Note over A,DB: 1) Generate per-user DEK if needed<br/>2) Encrypt text with AES-GCM
-    A->>KV: (Optional) Fetch / unwrap user DEK
-    KV-->>A: Decrypted DEK
-    A->>DB: Store encrypted diary entry + metadata
+# High Level Architecture
 
-    Note over A,Q: Create Garden (PENDING) and queue job
-    A->>DB: Create Garden record (status=PENDING, progress=0)
-    A->>Q: Add job: { gardenId }
-
-    F-->>U: Show “Garden generating…” state
-
-    %% Worker side
-    Q->>W: Deliver job { gardenId }
-    W->>DB: Fetch Garden + related diary/summary
-    W->>KV: Fetch & unwrap DEK
-    KV-->>W: Decrypted DEK
-    W->>W: Decrypt diary / summary (AES-GCM)
-    W-->>DB: Update Garden progress (10–30%)
-
-    Note over W: Analyse mood → valence, arousal, emotions, tags
-    W->>W: Build Mood object + prompt components
-    W-->>DB: Update Garden progress (50%)
-
-    W->>OA: Send prompt for image generation
-    OA-->>W: Return generated image (binary buffer)
-    W-->>DB: Update Garden progress (75%)
-
-    W->>CL: Upload image buffer
-    CL-->>W: Return image URL + publicId
-
-    Note over W,DB: Save final summary, palette, status=READY
-    W-->>DB: Update Garden with imageUrl,<br/>publicId, palette, summary,<br/>status=READY, progress=100%
-
-    F->>A: Poll / subscribe for Garden status
-    A->>DB: Get Garden
-    DB-->>A: Garden (status=READY, imageUrl,…)
-    A-->>F: Garden data
-    F-->>U: Display finished Mood Garden 🌱
+User writes diary entry
+        |
+        v
+Diary entry encrypted (AES-GCM)
+        |
+        v
+Saved to DB (encrypted) ----> Garden record created (PENDING)
+        |
+        v
+Garden job queued (BullMQ)
+        |
+        v
+Garden Worker processes job:
+    1. Fetch garden + decrypt diary
+    2. Analyse emotions + generate prompt
+    3. Request image from OpenAI
+    4. Upload image to Cloudinary
+    5. Save final summary + metadata
+        |
+        v
+Garden marked READY → User sees result
 
 
 ---
@@ -214,6 +188,7 @@ Mood Gardens demonstrates:
 
 **Email:** alexrobincrabbe@gmail.com  
 **LinkedIn:** https://www.linkedin.com/in/alex-crabbe
+
 
 
 
