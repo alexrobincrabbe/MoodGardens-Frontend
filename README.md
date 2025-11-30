@@ -1,4 +1,4 @@
-# 🌱 **Mood Gardens**
+#  **Mood Gardens**
 ### *An AI-generated visual diary with encryption, aggregation, and emotional landscape generation*
 
 Mood Gardens transforms personal diary entries into **AI-generated emotional gardens**.  
@@ -8,31 +8,31 @@ This repository is designed as a **portfolio flagship project**, showcasing full
 
 ---
 
-## 🌟 Features
+##  Features
 
-### 🧠 AI Mood Analysis
+###  AI Mood Analysis
 - Semantic mood extraction from diary entries  
 - Weighted emotion scoring  
 - Dynamic prompt generation for OpenAI image models  
 
-### 🌺 Generative Mood Gardens
+###  Generative Mood Gardens
 - AI-generated images based on emotional signatures  
 - Custom ambience layers, palettes, and generative rules  
 - Daily / weekly / monthly / yearly gardens  
 
-### 🔐 Zero-Trust Encryption Model
+###  Zero-Trust Encryption Model
 - AES-GCM encryption for all diary entries  
 - Per-user Data Encryption Keys (DEKs)  
 - Keys encrypted via Azure Key Vault  
 - No plaintext diary content stored anywhere  
 
-### 🗓 Time-Period Aggregation Engine
+###  Time-Period Aggregation Engine
 - Daily → Weekly → Monthly → Yearly summaries  
 - BullMQ workers for background processing  
 - Retries, idempotency, and progress reporting  
 - Timezone-aware with custom “day rollover” per user  
 
-### 👤 Elegant Frontend
+###  Elegant Frontend
 - React + Vite + TypeScript + Tailwind CSS  
 - Apollo Client for GraphQL  
 - Live job progress for garden generation  
@@ -51,11 +51,9 @@ This repository is designed as a **portfolio flagship project**, showcasing full
 ---
 
 ## Architecture Overview
-
+<div align="center">
 User writes diary entry 
-
 |
-
 v
 
 Diary entry encrypted (AES-GCM)
@@ -86,7 +84,7 @@ Garden Worker processes job:
 |
 
 v
-
+</div>
 Garden marked READY → User sees result
 
 
@@ -238,6 +236,7 @@ Mood Gardens demonstrates:
 
 **Email:** alexrobincrabbe@gmail.com  
 **LinkedIn:** https://www.linkedin.com/in/alex-crabbe
+
 
 
 
