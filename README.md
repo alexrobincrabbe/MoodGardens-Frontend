@@ -50,37 +50,7 @@ This repository is designed as a **portfolio flagship project**, showcasing full
 
 ---
 
-## Architecture Overview
-<div align="center">
-User writes diary entry <br>
-|<br>
-v<br>
-Diary entry encrypted (AES-GCM)<br>
-|<br>
-v<br>
-Saved to DB (encrypted) ----> Garden record created (PENDING)<br>
-|<br>
-v<br>
-Garden job queued (BullMQ)<br>
-|<br>
-v<br>
-    <span align="left">
-Garden Worker processes job:
-1. Fetch garden + decrypt diary
-2. Analyse emotions + generate prompt
-3. Request image from OpenAI
-4. Upload image to Cloudinary
-5. Save final summary + metadata
-    </span>
-|<br>
-v<br>
-Garden marked READY → User sees result
-</div>
-
-
-
-
-## MoodGardens – Image Generation Pipeline (Overview)
+## Image Generation Pipeline (Overview)
 
 The MoodGardens Image Generation Pipeline transforms encrypted diary entries into AI-generated emotional gardens using a secure, multi-stage processing workflow.
 The system is designed for privacy, scalability, and asynchronous processing, powered by BullMQ, Redis, Prisma, OpenAI, and Cloudinary
@@ -225,6 +195,7 @@ Mood Gardens demonstrates:
 ## 📩 Contact
 
 **Portfolio:** https://alex-crabbe.vercel.app/contact
+
 
 
 
