@@ -120,18 +120,18 @@ Docker, Docker Hub, GitHub Actions
 
 ## 🎨 Example Output
 
-<img width="100" height="100" alt="Birds" src="https://github.com/user-attachments/assets/121e2897-f0b3-4874-91ff-ebaf7e4c8df1" />
-<img width="100" height="100" alt="Whirl" src="https://github.com/user-attachments/assets/b0033e2b-3345-4b5b-9b37-ab3ef87d95ed" />
-<img width="100" height="100" alt="Trippy" src="https://github.com/user-attachments/assets/cd52dc88-af20-4d47-92fa-7d161bfa7807" />
-<img width="100" height="100" alt="Castle" src="https://github.com/user-attachments/assets/3818e9c1-0fab-4434-a71b-5ffee9366e42" />
-<img width="100" height="100" alt="Love" src="https://github.com/user-attachments/assets/34695a06-297d-4807-bb3a-39e8f0540b49" />
-<img width="100" height="100" alt="Frogs" src="https://github.com/user-attachments/assets/e84046ff-00ec-4520-9af9-c18c4d533a36" />
-<img width="100" height="100" alt="Moon" src="https://github.com/user-attachments/assets/4b396ed0-981d-4ff4-b9fd-63a8917407ff" />
-<img width="100" height="100" alt="Starry" src="https://github.com/user-attachments/assets/1a46f16d-3eb2-491e-81aa-a6576b3fbfe2" />
-<img width="100" height="100" alt="Pool" src="https://github.com/user-attachments/assets/157c81dc-3440-42f5-859d-d48205b7af04" />
-<img width="100" height="100" alt="Lavender" src="https://github.com/user-attachments/assets/eb9b24a3-188e-4371-bef6-0abddcc207d7" />
-<img width="100" height="100" alt="Darkness" src="https://github.com/user-attachments/assets/77710195-24e4-4e93-8d09-2ceb7370d966" />
-<img width="100" height="100" alt="Thunder" src="https://github.com/user-attachments/assets/5506a812-2066-434a-815e-3192b25b1983" />
+<img width="150" height="150" alt="Birds" src="https://github.com/user-attachments/assets/121e2897-f0b3-4874-91ff-ebaf7e4c8df1" />
+<img width="150" height="150" alt="Whirl" src="https://github.com/user-attachments/assets/b0033e2b-3345-4b5b-9b37-ab3ef87d95ed" />
+<img width="150" height="150" alt="Trippy" src="https://github.com/user-attachments/assets/cd52dc88-af20-4d47-92fa-7d161bfa7807" />
+<img width="150" height="150" alt="Castle" src="https://github.com/user-attachments/assets/3818e9c1-0fab-4434-a71b-5ffee9366e42" />
+<img width="150" height="150" alt="Love" src="https://github.com/user-attachments/assets/34695a06-297d-4807-bb3a-39e8f0540b49" />
+<img width="150" height="150" alt="Frogs" src="https://github.com/user-attachments/assets/e84046ff-00ec-4520-9af9-c18c4d533a36" />
+<img width="150" height="150" alt="Moon" src="https://github.com/user-attachments/assets/4b396ed0-981d-4ff4-b9fd-63a8917407ff" />
+<img width="150" height="150" alt="Starry" src="https://github.com/user-attachments/assets/1a46f16d-3eb2-491e-81aa-a6576b3fbfe2" />
+<img width="150" height="150" alt="Pool" src="https://github.com/user-attachments/assets/157c81dc-3440-42f5-859d-d48205b7af04" />
+<img width="150" height="150" alt="Lavender" src="https://github.com/user-attachments/assets/eb9b24a3-188e-4371-bef6-0abddcc207d7" />
+<img width="150" height="150" alt="Darkness" src="https://github.com/user-attachments/assets/77710195-24e4-4e93-8d09-2ceb7370d966" />
+<img width="150" height="150" alt="Thunder" src="https://github.com/user-attachments/assets/5506a812-2066-434a-815e-3192b25b1983" />
 
 
 ---
@@ -158,6 +158,7 @@ Mood Gardens demonstrates:
 
 **Email:** alexrobincrabbe@gmail.com  
 **LinkedIn:** https://www.linkedin.com/in/alex-crabbe
+
 
 
 
