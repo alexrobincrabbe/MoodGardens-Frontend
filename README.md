@@ -89,34 +89,39 @@ The system is designed for privacy, scalability, and asynchronous processing, po
 sequenceDiagram
     autonumber
 
-    participant U as User
-    participant API as Backend API
-    participant DB as Database
-    participant Q as BullMQ Queue
-    participant W as Garden Worker
-    participant OA as OpenAI
-    participant CL as Cloudinary
+    actor User
+    participant Frontend as Frontend (React)
+    participant API as API (GraphQL)
+    participant DB as PostgreSQL
+    participant Queue as BullMQ Queue
+    participant Worker as Garden Worker
+    participant OpenAI as OpenAI Image API
+    participant Cloudinary
 
-    U->>API: Write & submit diary entry
+    User->>Frontend: Write & submit diary entry
+    Frontend->>API: submitDiaryEntry()
     API->>API: Encrypt diary (AES-GCM)
     API->>DB: Save encrypted diary
     API->>DB: Create Garden (PENDING)
-    API->>Q: Enqueue garden job (gardenId)
+    API->>Queue: Enqueue garden job (gardenId)
 
-    Q->>W: Deliver job (gardenId)
-    W->>DB: Fetch garden + encrypted diary
-    W->>W: Decrypt diary
-    W->>W: Analyse emotions & build prompt
-    W->>OA: Request image with prompt
-    OA-->>W: Return generated image
-    W->>CL: Upload image
-    CL-->>W: Return image URL
-    W->>DB: Save image URL, summary, metadata\nstatus = READY
+    Queue->>Worker: Deliver job (gardenId)
+    Worker->>DB: Fetch garden + encrypted diary
+    Worker->>Worker: Decrypt diary text
+    Worker->>Worker: Analyse emotions & build prompt
+    Worker->>OpenAI: Request image with prompt
+    OpenAI-->>Worker: Return generated image
+    Worker->>Cloudinary: Upload image
+    Cloudinary-->>Worker: Return image URL
+    Worker->>DB: Save image URL, summary, status=READY
 
-    U->>API: Check garden status
-    API->>DB: Load garden
+    Frontend->>API: Poll garden status
+    API->>DB: Get garden
     DB-->>API: Garden (READY + image URL)
-    API-->>U: Display finished garden
+    API-->>Frontend: Garden data
+    Frontend-->>User: Display finished garden
+```
+
 
 
 ---
@@ -208,6 +213,7 @@ Mood Gardens demonstrates:
 
 **Email:** alexrobincrabbe@gmail.com  
 **LinkedIn:** https://www.linkedin.com/in/alex-crabbe
+
 
 
 
