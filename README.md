@@ -83,29 +83,40 @@ Azure Key Vault (Encrypted User Keys)
 The MoodGardens Image Generation Pipeline transforms encrypted diary entries into AI-generated emotional gardens using a secure, multi-stage processing workflow.
 The system is designed for privacy, scalability, and asynchronous processing, powered by BullMQ, Redis, Prisma, OpenAI, and Cloudinary
 
-# High Level Architecture
+### High Level Architecture
 
-User writes diary entry
-        |
-        v
-Diary entry encrypted (AES-GCM)
-        |
-        v
-Saved to DB (encrypted) ----> Garden record created (PENDING)
-        |
-        v
-Garden job queued (BullMQ)
-        |
-        v
-Garden Worker processes job:
-    1. Fetch garden + decrypt diary
-    2. Analyse emotions + generate prompt
-    3. Request image from OpenAI
-    4. Upload image to Cloudinary
-    5. Save final summary + metadata
-        |
-        v
-Garden marked READY → User sees result
+```mermaid
+sequenceDiagram
+    autonumber
+
+    participant U as User
+    participant API as Backend API
+    participant DB as Database
+    participant Q as BullMQ Queue
+    participant W as Garden Worker
+    participant OA as OpenAI
+    participant CL as Cloudinary
+
+    U->>API: Write & submit diary entry
+    API->>API: Encrypt diary (AES-GCM)
+    API->>DB: Save encrypted diary
+    API->>DB: Create Garden (PENDING)
+    API->>Q: Enqueue garden job (gardenId)
+
+    Q->>W: Deliver job (gardenId)
+    W->>DB: Fetch garden + encrypted diary
+    W->>W: Decrypt diary
+    W->>W: Analyse emotions & build prompt
+    W->>OA: Request image with prompt
+    OA-->>W: Return generated image
+    W->>CL: Upload image
+    CL-->>W: Return image URL
+    W->>DB: Save image URL, summary, metadata\nstatus = READY
+
+    U->>API: Check garden status
+    API->>DB: Load garden
+    DB-->>API: Garden (READY + image URL)
+    API-->>U: Display finished garden
 
 
 ---
@@ -197,6 +208,7 @@ Mood Gardens demonstrates:
 
 **Email:** alexrobincrabbe@gmail.com  
 **LinkedIn:** https://www.linkedin.com/in/alex-crabbe
+
 
 
 
