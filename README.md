@@ -52,18 +52,27 @@ This repository is designed as a **portfolio flagship project**, showcasing full
 
 ## Architecture Overview
 
-Frontend (React, Vite, TS)
-|
-| GraphQL over HTTPS
-v
-API Container (Express + Apollo + Prisma)
-|
-| BullMQ Jobs
-v
-Redis Queue -----> Worker Containers (Garden Worker, Aggregation Worker)
+User writes diary entry
 |
 v
-PostgreSQL (Azure)
+Diary entry encrypted (AES-GCM)
+|
+v
+Saved to DB (encrypted) ----> Garden record created (PENDING)
+|
+v
+Garden job queued (BullMQ)
+|
+v
+Garden Worker processes job:
+1. Fetch garden + decrypt diary
+2. Analyse emotions + generate prompt
+3. Request image from OpenAI
+4. Upload image to Cloudinary
+5. Save final summary + metadata
+|
+v
+Garden marked READY → User sees result
 
 Cloudinary (Image Storage)
 Azure Key Vault (Encrypted User Keys)
@@ -188,6 +197,7 @@ Mood Gardens demonstrates:
 
 **Email:** alexrobincrabbe@gmail.com  
 **LinkedIn:** https://www.linkedin.com/in/alex-crabbe
+
 
 
 
