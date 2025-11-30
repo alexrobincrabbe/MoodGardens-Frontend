@@ -174,7 +174,7 @@ Docker, Docker Hub, GitHub Actions
 
 ## 👤 About the Developer
 
-Hi — I’m **Alex Crabbe**, a full-stack developer with a background in **Biomedical Physics (MRI simulations)**.
+Hi, I’m **Alex Crabbe**, a full-stack developer with a background in **Biomedical Physics (MRI simulations)**.
 
 Mood Gardens demonstrates:
 
@@ -193,6 +193,7 @@ Mood Gardens demonstrates:
 ## 📩 Contact
 
 https://alex-crabbe.vercel.app/contact
+
 
 
 
