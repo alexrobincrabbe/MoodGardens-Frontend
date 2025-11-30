@@ -51,7 +51,7 @@ This repository is designed as a **portfolio flagship project**, showcasing full
 ---
 
 ## Architecture Overview
-<div style="display:flex; justify-content:center;">
+<div align="center">
 User writes diary entry <br>
 |<br>
 v<br>
@@ -64,7 +64,7 @@ v<br>
 Garden job queued (BullMQ)<br>
 |<br>
 v<br>
-    <div align="left">
+    <div align="left" style="width:300px; margin: 0 auto; background:#eee;">
 Garden Worker processes job:<br>
 1. Fetch garden + decrypt diary<br>
 2. Analyse emotions + generate prompt<br>
@@ -225,6 +225,7 @@ Mood Gardens demonstrates:
 ## 📩 Contact
 
 **Portfolio:** https://alex-crabbe.vercel.app/contact
+
 
 
 
