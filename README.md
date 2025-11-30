@@ -52,40 +52,28 @@ This repository is designed as a **portfolio flagship project**, showcasing full
 
 ## Architecture Overview
 <div align="center">
-User writes diary entry 
-|
-v
-
-Diary entry encrypted (AES-GCM)
-
-|
-
-v
-
-Saved to DB (encrypted) ----> Garden record created (PENDING)
-
-|
-
-v
-
-Garden job queued (BullMQ)
-
-|
-
-v
-
+User writes diary entry <br>
+|<br>
+v<br>
+Diary entry encrypted (AES-GCM)<br>
+|<br>
+v<br>
+Saved to DB (encrypted) ----> Garden record created (PENDING)<br>
+|<br>
+v<br>
+Garden job queued (BullMQ)<br>
+|<br>
+v<br>
 Garden Worker processes job:
 1. Fetch garden + decrypt diary
 2. Analyse emotions + generate prompt
 3. Request image from OpenAI
 4. Upload image to Cloudinary
-5. Save final summary + metadata
-   
-|
-
-v
-</div>
+5. Save final summary + metadata<br>
+|<br>
+v<br>
 Garden marked READY → User sees result
+</div>
 
 
 
@@ -234,8 +222,8 @@ Mood Gardens demonstrates:
 
 ## 📩 Contact
 
-**Email:** alexrobincrabbe@gmail.com  
-**LinkedIn:** https://www.linkedin.com/in/alex-crabbe
+**Portfolio:** https://alex-crabbe.vercel.app/contact
+
 
 
 
