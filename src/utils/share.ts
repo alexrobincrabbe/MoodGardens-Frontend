@@ -1,4 +1,3 @@
-// apps/web/src/utils/share.ts
 export const openPopup = (url: string) => {
   const w = 700, h = 600;
   const dl = (window.screenLeft ?? window.screenX ?? 0) as number;
@@ -20,7 +19,6 @@ export const shareNative = async (url: string, text: string, title = "Mood Garde
       /* fall through to web intents */
     }
   }
-  // Fallback: X intent
   openPopup(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
 };
 

@@ -81,10 +81,7 @@ function RegisterLoginForm() {
 
         const result = await registerMut({
           variables: registerDetails,
-          // no refetchQueries – user is NOT logged in after register
         });
-
-        // 1) Handle GraphQL errors returned in the result
         const gqlError = result.errors?.[0];
         const code = gqlError?.extensions?.code;
 
@@ -97,11 +94,7 @@ function RegisterLoginForm() {
           if (code === "EMAIL_IN_USE") {
             message = "That email address is already in use.";
           } else if (code === "BAD_USER_INPUT") {
-            // backend already sends nice messages like:
-            // "Email, password and display name are required."
-            // "Please enter a valid email address."
-            // "Password must be at least 8 characters long."
-            // so gqlError.message is usually enough
+            //
           }
 
           setMsg(message);
@@ -109,7 +102,6 @@ function RegisterLoginForm() {
           return;
         }
 
-        // 2) If no GraphQL error but no user, treat as generic failure
         const user = result.data?.register?.user;
         if (!user) {
           const fallback = "Registration failed. Please try again.";
@@ -118,7 +110,6 @@ function RegisterLoginForm() {
           return;
         }
 
-        // 🎉 success
         toast.success(
           `Account created for ${loginDetails.email}. Please check your email to verify your address before signing in.`,
         );
@@ -130,15 +121,12 @@ function RegisterLoginForm() {
         setDisplayName("");
         setMode("login");
       } else {
-        // LOGIN
         const loginResult = await loginMut({
           variables: loginDetails,
           refetchQueries: [{ query: User }],
         });
 
         await client.resetStore();
-
-        // 1) Handle GraphQL errors returned in the result (if errorPolicy: 'all')
         const gqlError = loginResult.errors?.[0];
         const code = gqlError?.extensions?.code;
 
@@ -159,7 +147,6 @@ function RegisterLoginForm() {
           return;
         }
 
-        // 2) If no GraphQL error but no user, treat as generic failure
         const user = loginResult.data?.login?.user;
         if (!user) {
           const fallback = "Sign-in failed. Please try again.";
@@ -174,7 +161,6 @@ function RegisterLoginForm() {
         navigate("/today");
       }
     } catch (err: any) {
-      // This catch is for thrown ApolloError / network errors
       console.error("[Auth] register/login error (raw):", err);
 
       const graphError = err?.graphQLErrors?.[0];
@@ -289,8 +275,6 @@ function RegisterLoginForm() {
         />
       </div>
       {msg && <p className="text-sm text-red-600">{msg}</p>}
-
-      {/* Forgot password link – only in login mode */}
       {mode === "login" && (
         <button
           type="button"
@@ -316,10 +300,7 @@ function RegisterLoginForm() {
             : "Sign in"}
       </GenericButton>
 
-      {/* Divider */}
       <div className="my-2 text-xs text-gray-400">or</div>
-
-      {/* Google login */}
 
       <GoogleLogin
         onSuccess={async (credentialResponse) => {
@@ -347,7 +328,6 @@ function RegisterLoginForm() {
             navigate("/today");
           } catch (err: any) {
             console.log(err);
-            // same error handling pattern as your other mutations
           }
         }}
         onError={() => {

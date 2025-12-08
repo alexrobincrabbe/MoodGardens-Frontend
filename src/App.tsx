@@ -21,7 +21,7 @@ export default function App() {
         <Toaster
           position="top-right"
           containerStyle={{
-            top: 100, // adjust this to match your TopBar height (in px)
+            top: 100,
             right: 16,
           }}
           toastOptions={{

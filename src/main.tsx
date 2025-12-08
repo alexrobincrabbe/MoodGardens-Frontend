@@ -13,7 +13,7 @@ import {
   History,
   VerifyEmailPage,
   ResetPasswordPage,
-  PremiumSuccessPage
+  PremiumSuccessPage,
 } from "./pages";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
@@ -30,8 +30,8 @@ const router = createBrowserRouter([
       { path: "account", element: <Account /> },
       { path: "history", element: <History /> },
       { path: "/auth/verify-email", element: <VerifyEmailPage /> },
-      { path: "/auth/reset-password", element:<ResetPasswordPage />},
-    { path: "/premium/success", element:<PremiumSuccessPage  />},
+      { path: "/auth/reset-password", element: <ResetPasswordPage /> },
+      { path: "/premium/success", element: <PremiumSuccessPage /> },
     ],
   },
 ]);

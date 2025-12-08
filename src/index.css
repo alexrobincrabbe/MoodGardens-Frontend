@@ -16,7 +16,7 @@
 
 @layer base {
   html {
-    font-size: 18px; /* makes all text ~12.5% larger */
+    font-size: 18px; 
     font-weight: 600;
   }
 }

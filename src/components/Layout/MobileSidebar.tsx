@@ -22,10 +22,8 @@ export function MobileSidebar({
           onClick={() => setSidebarOpen(false)}
         />
       )}
-
-      {/* Drawer */}
       <aside
-        className={`${className} font-zen-loop fixed inset-y-0 left-0 z-50 w-48 transform border-r bg-white p-4 shadow-lg transition-transform duration-200 ease-out  ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`${className} font-zen-loop fixed inset-y-0 left-0 z-50 w-48 transform border-r bg-white p-4 shadow-lg transition-transform duration-200 ease-out ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div className="mb-4 flex items-center justify-between">
           <span className="flex items-center gap-2">
@@ -63,6 +61,20 @@ export function MobileSidebar({
             onClick={() => setSidebarOpen(false)}
           >
             Gardens
+          </NavLink>
+          <NavLink
+            to="/history"
+            className={linkClasses}
+            onClick={() => setSidebarOpen(false)}
+          >
+            History
+          </NavLink>
+          <NavLink
+            to="/account"
+            className={linkClasses}
+            onClick={() => setSidebarOpen(false)}
+          >
+            Account
           </NavLink>
         </nav>
       </aside>

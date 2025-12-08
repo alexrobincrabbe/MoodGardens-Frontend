@@ -1,4 +1,3 @@
-// src/cloudinary.ts
 import { Cloudinary } from "@cloudinary/url-gen";
 import { fill } from "@cloudinary/url-gen/actions/resize";
 import { autoGravity } from "@cloudinary/url-gen/qualifiers/gravity";
@@ -25,16 +24,14 @@ export const gardenThumb = (publicId: string) =>
     .delivery(quality("auto"))
     .delivery(dpr("auto"));
 
-/** ✅ Clean download URL: ONE fl_attachment:<filename>, q_auto:best, PNG */
 export const gardenDownloadUrl = (publicId: string, filename = "mood-garden.png") =>
   cld
     .image(publicId)
     .delivery(format("png"))
     .delivery(quality("auto:best"))
-    .addFlag(Flag.attachment(filename)) // <-- includes the filename; no string replace needed
+    .addFlag(Flag.attachment(filename)) 
     .toURL();
 
-/** Share-friendly CDN URL (use for social/copy links) */
 export const gardenShareUrl = (publicId: string) =>
   cld
     .image(publicId)
