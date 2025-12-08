@@ -90,7 +90,7 @@ export function History() {
                   </div>
                   {g.summary && (
                     <p className="text-sm text-slate-700 line-clamp-3">
-                      {g.summary}
+                      {g.shortTheme}
                     </p>
                   )}
                   {g.shareUrl && (

@@ -25,6 +25,7 @@ export const GetGarden = gql`
       imageUrl
       publicId
       shareUrl
+      shortTheme
       summary
       period
       periodKey
@@ -42,6 +43,7 @@ export const GetGardensByPeriod = gql`
         imageUrl
         publicId
         shareUrl
+        shortTheme
         summary
         period
         periodKey
@@ -61,6 +63,7 @@ export const GardensByMonth = gql`
       imageUrl
       publicId
       summary
+      shortTheme
       progress
       shareUrl
       updatedAt

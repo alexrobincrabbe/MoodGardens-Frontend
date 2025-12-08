@@ -14,6 +14,7 @@ export type Garden = {
     periodKey: string;
     imageUrl: string;
     publicId: string;
+    shortTheme: string | null
     summary?: string | null;
     shareUrl?: string | null;
     status: | "PENDING" | "READY" | "FAILED";
