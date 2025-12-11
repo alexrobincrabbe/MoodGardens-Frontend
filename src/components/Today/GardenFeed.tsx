@@ -14,7 +14,10 @@ type Garden = {
   publicId: string;
   periodKey: string;
   shareUrl?: string | null;
+  updatedAt: string;
+  version?: number | null;
 };
+
 
 type props = {
   garden?: Garden | null;
@@ -51,17 +54,17 @@ export function GardenFeedItem({ garden, day }: props) {
       {garden?.publicId && garden.status === "READY" && (
         <div className="mt-2">
           <AdvancedImage
-            key={garden.publicId}
-            cldImg={gardenThumb(garden.publicId)}
-            plugins={[
-              lazyload(),
-              responsive({ steps: [256, 384, 512, 640, 768, 1024] }),
-              placeholder({ mode: "blur" }),
-            ]}
-            alt={`Garden for ${garden.periodKey}`}
-            decoding="async"
-            className="mt-2 w-full rounded-md"
-          />
+      key={garden.publicId + garden.version}   // or + updatedAt as well
+      cldImg={gardenThumb(garden.publicId, garden.version ?? undefined)}
+      plugins={[
+        lazyload(),
+        responsive({ steps: [256, 384, 512, 640, 768, 1024] }),
+        placeholder({ mode: "blur" }),
+      ]}
+      alt={`Garden for ${garden.periodKey}`}
+      decoding="async"
+      className="mt-2 w-full rounded-md"
+    />
 
           <div className="mt-2 flex flex-wrap gap-2">
             <GenericButton

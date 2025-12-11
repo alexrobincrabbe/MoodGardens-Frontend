@@ -1,48 +1,60 @@
-import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@apollo/client";
-import { GetGarden } from "../../graphql";
-import { GardenFeedItem } from "..";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useMutation, useQuery } from "@apollo/client";
+import { GetGarden, RegenerateGarden } from "../../graphql";
+import { GardenFeedItem, GenericButton } from "..";
 import { toast } from "react-hot-toast";
 import { useAuthData } from "../../hooks";
 
 type PreviewProps = {
   periodKey: string;
   onGardenReady?: () => void;
+  refetchFeed: () => Promise<any>;
 };
 
-export function TodayGardenPreview({ periodKey, onGardenReady }: PreviewProps) {
-  const { authed, authReady } = useAuthData();
-  const { data, error, startPolling, stopPolling } = useQuery(GetGarden, {
-    variables: { period: "DAY", periodKey },
-    fetchPolicy: "network-only",
-    notifyOnNetworkStatusChange: true,
-    skip: !authed || !authReady,
-  });
+export function TodayGardenPreview({
+  periodKey,
+  onGardenReady,
+  refetchFeed,
+}: PreviewProps) {
+  const { user, authed, authReady } = useAuthData();
+  const regenTokens = user.regenerateTokens;
+ const { data, error, startPolling, stopPolling, refetch } = useQuery(GetGarden, {
+  variables: { period: "DAY", periodKey },
+  fetchPolicy: "network-only",
+  notifyOnNetworkStatusChange: true,
+  skip: !authed || !authReady,
+});
+
   const [progress, setProgress] = useState<number>(0);
   const rafRef = useRef<number | null>(null);
   const startTsRef = useRef<number | null>(null);
   const hasEverBeenNonReadyRef = useRef(false);
   const hasShownToastRef = useRef(false);
   const hasNotifiedParentRef = useRef(false);
-  useEffect(() => {
-    if (!authed) {
-      stopPolling?.();
-      return;
-    }
-    startPolling?.(1500);
-    return () => stopPolling?.();
-  }, [authed, startPolling, stopPolling]);
   const garden = data?.garden;
-  useEffect(() => {
-    const s = data?.garden?.status;
-    if (s === "READY" || s === "FAILED") stopPolling?.();
-  }, [data?.garden?.status, stopPolling]);
   const serverProgress =
     typeof (garden as any)?.progress === "number"
       ? (garden as any).progress
       : null;
+  const displayProgress = Math.round(serverProgress ?? progress);
   const status = garden?.status;
   const summary = garden?.summary;
+const regenerate = useRegenerateGarden(refetchFeed, refetch);
+ useEffect(() => {
+  if (!authed) {
+    stopPolling?.();
+  }
+}, [authed, stopPolling]);
+useEffect(() => {
+  if (!authed) return;
+  if (status === "PENDING") {
+    startPolling?.(1500);
+  }
+}, [authed, status, startPolling]);
+  useEffect(() => {
+    const s = data?.garden?.status;
+    if (s === "READY" || s === "FAILED") stopPolling?.();
+  }, [data?.garden?.status, stopPolling]);
   useEffect(() => {
     if (!status) return;
     if (status !== "READY") {
@@ -112,7 +124,6 @@ export function TodayGardenPreview({ periodKey, onGardenReady }: PreviewProps) {
       };
     }
   }, [authed, status, serverProgress]);
-  const displayProgress = Math.round(serverProgress ?? progress);
   if (!authed) {
     return (
       <p className="text-sm text-amber-700">
@@ -131,7 +142,14 @@ export function TodayGardenPreview({ periodKey, onGardenReady }: PreviewProps) {
     return <p className="text-sm text-gray-500">No garden yet.</p>;
   }
   if (status === "READY") {
-    return <GardenFeedItem garden={garden} day={periodKey} />;
+    return (
+      <>
+        <GardenFeedItem garden={garden} day={periodKey} />
+        <GenericButton onClick={() => regenerate(garden.id)}>
+          Regenerate ({regenTokens})
+        </GenericButton>
+      </>
+    );
   }
 
   return (
@@ -161,4 +179,28 @@ export function TodayGardenPreview({ periodKey, onGardenReady }: PreviewProps) {
       </div>
     </div>
   );
+}
+
+function useRegenerateGarden(
+  refetchFeed: () => Promise<any>,
+  refetchGarden: () => Promise<any>
+) {
+  const [regenerateGardenMutation] = useMutation(RegenerateGarden);
+
+  const regenerate = useCallback(
+    async (gardenId: string | number) => {
+      await regenerateGardenMutation({
+        variables: { gardenId: String(gardenId) },
+      });
+
+      // Make sure both the feed and the today-garden query refresh
+      await Promise.all([
+        refetchGarden(),
+        refetchFeed(),
+      ]);
+    },
+    [regenerateGardenMutation, refetchFeed, refetchGarden],
+  );
+
+  return regenerate;
 }

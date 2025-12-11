@@ -36,6 +36,7 @@ export const PaginatedDiaryEntries = gql`
         progress
         periodKey
         updatedAt
+        version
       }
     }
   }

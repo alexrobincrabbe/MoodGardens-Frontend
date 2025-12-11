@@ -124,7 +124,7 @@ export function PreviewModal({
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
-      if (e.key === "ArrowLeft")goPrev() ;
+      if (e.key === "ArrowLeft") goPrev();
       if (e.key === "ArrowRight") goNext();
     };
     window.addEventListener("keydown", onKey);
@@ -158,9 +158,9 @@ export function PreviewModal({
 
     if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
       if (deltaX < 0 && hasNext) {
-          goNext();
+        goNext();
       } else if (deltaX > 0 && hasPrev) {
-      goPrev();
+        goPrev();
       }
     }
 
@@ -261,11 +261,14 @@ export function PreviewModal({
                 }}
               >
                 {/* Image */}
-                <div className="flex h-full lg:h-[430px] items-center justify-center">
+                <div className="flex h-full items-center justify-center lg:h-[430px]">
                   <div className="relative m-2 mb-0 aspect-square w-full overflow-hidden rounded-lg lg:mb-2">
                     <AdvancedImage
-                      key={selected.publicId}
-                      cldImg={gardenLarge(selected.publicId)}
+                      key={`${selected.publicId}-${selected.version ?? ""}`}
+                      cldImg={gardenLarge(
+                        selected.publicId,
+                        selected.version ?? undefined,
+                      )}
                       plugins={[
                         lazyload(),
                         responsive({
@@ -338,18 +341,20 @@ export function PreviewModal({
                   gardenDownloadUrl(
                     selected.publicId,
                     `mood-garden-${selected.dayKey}.png`,
+                    selected.version ?? null, // 👈 pass version here
                   ),
                   `mood-garden-${selected.dayKey}.png`,
                 )
               }
-              className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50"
             >
               Download
             </GenericButton>
 
-            {/* Share menu */}
             <ShareMenu
-              url={selected.shareUrl ?? gardenShareUrl(selected.publicId)}
+              url={
+                selected.shareUrl ??
+                gardenShareUrl(selected.publicId, selected.version ?? null)
+              }
               text={`My Mood Garden for ${selected.dayKey} 🌱 #MoodGardens`}
             />
           </div>

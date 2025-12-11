@@ -96,6 +96,7 @@ export function Today() {
           items={items}
           today={today}
           onTodayGardenReady={handleTodayGardenReady}
+          refetchFeed={refetchFeed}
         />
         {hasMore && (
           <LoadMoreTrigger
@@ -120,9 +121,15 @@ type GardensFeedProps = {
   items: FeedItem[];
   today: string;
   onTodayGardenReady: () => void;
+  refetchFeed: () => Promise<any>;
 };
 
-function GardensFeed({ items, today, onTodayGardenReady }: GardensFeedProps) {
+function GardensFeed({
+  items,
+  today,
+  onTodayGardenReady,
+  refetchFeed,
+}: GardensFeedProps) {
   return (
     <>
       {items.map((e) => {
@@ -138,6 +145,7 @@ function GardensFeed({ items, today, onTodayGardenReady }: GardensFeedProps) {
                 <TodayGardenPreview
                   periodKey={today}
                   onGardenReady={onTodayGardenReady}
+                  refetchFeed={refetchFeed}
                 />
               </div>
             ) : (

@@ -17,6 +17,23 @@ export const RequestGenerateGarden = gql`
   }
 `;
 
+export const RegenerateGarden = gql`
+  mutation RegenerateGarden($gardenId: String!) {
+    regenerateGarden(gardenId: $gardenId) {
+      id
+      status
+      period
+      periodKey
+      imageUrl
+      publicId
+      shareUrl
+      progress
+      updatedAt
+    }
+  }
+`;
+
+
 export const GetGarden = gql`
   query GetGarden($period: GardenPeriod!, $periodKey: String!) {
     garden(period: $period, periodKey: $periodKey) {
@@ -31,6 +48,7 @@ export const GetGarden = gql`
       periodKey
       progress
       updatedAt
+      version
     }
   }
 `;
@@ -67,6 +85,7 @@ export const GardensByMonth = gql`
       progress
       shareUrl
       updatedAt
+      version
     }
   }
 `;

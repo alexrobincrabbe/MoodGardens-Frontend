@@ -6,6 +6,7 @@ export const User = gql`
       id
       email
       isPremium
+      regenerateTokens
       displayName
       createdAt
       timezone

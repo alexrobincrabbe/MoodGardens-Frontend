@@ -10,6 +10,7 @@ type GardenCell = {
   imageUrl?: string | null;
   summary?: string | null;
   status?: string | null;
+  version?: number | null; // 👈 add this
 };
 
 type CalendarGridProps = {
@@ -61,6 +62,7 @@ export const CalendarGrid = memo(function CalendarGrid({
                       publicId: g.publicId!,
                       summary: g.summary,
                       shareUrl: (g as any)?.shareUrl ?? null,
+                      version: g.version ?? null,
                     });
                   }}
                   className="absolute inset-0 shadow-black transition-all duration-300 hover:scale-110 hover:shadow-2xl"
@@ -68,8 +70,8 @@ export const CalendarGrid = memo(function CalendarGrid({
                   title="Open preview"
                 >
                   <AdvancedImage
-                    key={g.publicId}
-                    cldImg={gardenThumb(g.publicId!)}
+                    key={`${g.publicId}-${g.version ?? ""}`}
+                    cldImg={gardenThumb(g.publicId!, g.version ?? undefined)}
                     plugins={[
                       lazyload(),
                       responsive({ steps: [160, 220, 300, 420, 560, 720] }),
