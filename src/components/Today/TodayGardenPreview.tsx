@@ -18,12 +18,15 @@ export function TodayGardenPreview({
 }: PreviewProps) {
   const { user, authed, authReady } = useAuthData();
   const regenTokens = user.regenerateTokens;
- const { data, error, startPolling, stopPolling, refetch } = useQuery(GetGarden, {
-  variables: { period: "DAY", periodKey },
-  fetchPolicy: "network-only",
-  notifyOnNetworkStatusChange: true,
-  skip: !authed || !authReady,
-});
+  const { data, error, startPolling, stopPolling, refetch } = useQuery(
+    GetGarden,
+    {
+      variables: { period: "DAY", periodKey },
+      fetchPolicy: "network-only",
+      notifyOnNetworkStatusChange: true,
+      skip: !authed || !authReady,
+    },
+  );
 
   const [progress, setProgress] = useState<number>(0);
   const rafRef = useRef<number | null>(null);
@@ -39,18 +42,18 @@ export function TodayGardenPreview({
   const displayProgress = Math.round(serverProgress ?? progress);
   const status = garden?.status;
   const summary = garden?.summary;
-const regenerate = useRegenerateGarden(refetchFeed, refetch);
- useEffect(() => {
-  if (!authed) {
-    stopPolling?.();
-  }
-}, [authed, stopPolling]);
-useEffect(() => {
-  if (!authed) return;
-  if (status === "PENDING") {
-    startPolling?.(1500);
-  }
-}, [authed, status, startPolling]);
+  const regenerate = useRegenerateGarden(refetchFeed, refetch);
+  useEffect(() => {
+    if (!authed) {
+      stopPolling?.();
+    }
+  }, [authed, stopPolling]);
+  useEffect(() => {
+    if (!authed) return;
+    if (status === "PENDING") {
+      startPolling?.(1500);
+    }
+  }, [authed, status, startPolling]);
   useEffect(() => {
     const s = data?.garden?.status;
     if (s === "READY" || s === "FAILED") stopPolling?.();
@@ -142,15 +145,31 @@ useEffect(() => {
     return <p className="text-sm text-gray-500">No garden yet.</p>;
   }
   if (status === "READY") {
-    return (
-      <>
-        <GardenFeedItem garden={garden} day={periodKey} />
-        <GenericButton onClick={() => regenerate(garden.id)}>
-          Regenerate ({regenTokens})
-        </GenericButton>
-      </>
+  const handleRegenerateClick = () => {
+    if (regenTokens <= 0) {
+      toast.error("You don’t have any regenerate tokens left.");
+      return;
+    }
+
+    const ok = window.confirm(
+      "Regenerating will permanently replace this garden image with a new one. The current version cannot be restored. Do you want to continue?"
     );
-  }
+
+    if (!ok) return;
+
+    void regenerate(garden.id);
+  };
+
+  return (
+    <>
+      <GardenFeedItem garden={garden} day={periodKey} />
+      <GenericButton onClick={handleRegenerateClick}>
+        Regenerate ({regenTokens})
+      </GenericButton>
+    </>
+  );
+}
+
 
   return (
     <div className="space-y-2">
@@ -183,7 +202,7 @@ useEffect(() => {
 
 function useRegenerateGarden(
   refetchFeed: () => Promise<any>,
-  refetchGarden: () => Promise<any>
+  refetchGarden: () => Promise<any>,
 ) {
   const [regenerateGardenMutation] = useMutation(RegenerateGarden);
 
@@ -194,10 +213,7 @@ function useRegenerateGarden(
       });
 
       // Make sure both the feed and the today-garden query refresh
-      await Promise.all([
-        refetchGarden(),
-        refetchFeed(),
-      ]);
+      await Promise.all([refetchGarden(), refetchFeed()]);
     },
     [regenerateGardenMutation, refetchFeed, refetchGarden],
   );
